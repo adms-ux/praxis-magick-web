@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -39,7 +40,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // TORMENTA ELÉCTRICA CON RESILIENCIA A CAMBIO DE PANTALLA Y RETROCESO
+  // TORMENTA ELÉCTRICA EN CANVAS
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -212,13 +213,13 @@ export default function Home() {
         .font-medieval { font-family: var(--font-medieval); }
       `}</style>
 
-      {/* AMBIENTE DE FONDO SUAVE */}
+      {/* AMBIENTE DE FONDO */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.22),rgba(0,0,0,0.98))]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.3),transparent_75%)]" />
 
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none w-full h-full" />
 
-        {/* LUNA PÚRPURA CON HALO SIN BANDING */}
+        {/* LUNA PÚRPURA */}
         <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-28 h-28 md:w-36 md:h-36 z-0 flex items-center justify-center">
           <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35)_0%,rgba(168,85,247,0.08)_45%,transparent_70%)] animate-pulse" />
           <Image 
@@ -269,8 +270,8 @@ export default function Home() {
           </p>
         </div>
 
-        {/* NAVEGACIÓN */}
-        <div className="flex flex-wrap justify-center gap-4 mb-16 text-sm font-medieval text-gray-300">
+        {/* NAVEGACIÓN RÁPIDA (CON ENLACE A OLEUMS) */}
+        <div className="flex flex-wrap justify-center items-center gap-4 mb-16 text-sm font-medieval text-gray-300">
           <a href="#instrucciones" className="hover:text-green-400 transition-colors border-b border-transparent hover:border-green-400 pb-0.5">
             ↓ Instrucciones de compra
           </a>
@@ -278,6 +279,13 @@ export default function Home() {
           <a href="#faq" className="hover:text-purple-400 transition-colors border-b border-transparent hover:border-purple-400 pb-0.5">
             ↓ Preguntas frecuentes
           </a>
+          <span className="text-gray-600">•</span>
+          <Link 
+            href="/oleums" 
+            className="text-green-300 hover:text-green-200 transition-colors border-b border-green-500/50 pb-0.5 flex items-center gap-1 font-semibold"
+          >
+            <span>⚡</span> Ver Próximos Oleums →
+          </Link>
         </div>
 
         {/* SECCIÓN LIBRO */}
