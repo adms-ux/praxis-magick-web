@@ -8,12 +8,10 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   
-  // MODALES
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
   
-  // CAPTURA & IDIOMAS
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
@@ -40,7 +38,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // TORMENTA ELÉCTRICA EN CANVAS
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -270,7 +267,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* NAVEGACIÓN RÁPIDA (CON ENLACE A OLEUMS) */}
+        {/* NAVEGACIÓN RÁPIDA */}
         <div className="flex flex-wrap justify-center items-center gap-4 mb-16 text-sm font-medieval text-gray-300">
           <a href="#instrucciones" className="hover:text-green-400 transition-colors border-b border-transparent hover:border-green-400 pb-0.5">
             ↓ Instrucciones de compra
@@ -279,13 +276,6 @@ export default function Home() {
           <a href="#faq" className="hover:text-purple-400 transition-colors border-b border-transparent hover:border-purple-400 pb-0.5">
             ↓ Preguntas frecuentes
           </a>
-          <span className="text-gray-600">•</span>
-          <Link 
-            href="/oleums" 
-            className="text-green-300 hover:text-green-200 transition-colors border-b border-green-500/50 pb-0.5 flex items-center gap-1 font-semibold"
-          >
-            <span>⚡</span> Ver Próximos Oleums →
-          </Link>
         </div>
 
         {/* SECCIÓN LIBRO */}
@@ -335,27 +325,21 @@ export default function Home() {
               <p className="text-xs font-semibold text-purple-400 font-medieval">
                 📅 Este bono se entrega el día de su lanzamiento: 23 de octubre.
               </p>
-              <p className="text-[11px] text-gray-500 font-medieval mt-1 italic">
-                (No se entrega antes ni por separado; es un obsequio exclusivo para quienes compran en la etapa de preventa).
-              </p>
             </div>
           </div>
         </div>
 
-        {/* BOTONES */}
-        <div className="flex flex-col sm:flex-row gap-6 w-full justify-center items-center mb-24">
-          
+        {/* BOTONES PREVENTA Y PRUEBA GRATIS */}
+        <div className="flex flex-col sm:flex-row gap-6 w-full justify-center items-center mb-10">
           <button 
             onClick={() => setShowCheckoutModal(true)}
             className="flex flex-col items-center justify-center px-8 py-4 bg-green-700/90 text-white rounded-xl font-medieval transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 hover:bg-green-600 hover:shadow-[0_10px_30px_rgba(34,197,94,0.6)] border border-green-500/50 cursor-pointer min-w-[280px]"
           >
             <span className="text-xl font-bold tracking-wide">Comprar Preventa</span>
-            
             <div className="flex items-center gap-2 mt-1">
               <span className="text-2xl font-bold text-green-200">$220 MXN</span>
               <span className="text-sm text-gray-300 line-through decoration-red-500 decoration-2 font-sans">$340 MXN</span>
             </div>
-
             <div className="text-[11px] text-green-100/80 font-sans mt-0.5">
               <span>$12.99 USD</span> <span className="line-through text-gray-300 decoration-red-400">($19.99 USD)</span>
             </div>
@@ -367,29 +351,60 @@ export default function Home() {
           >
             Reclamar prueba gratis
           </button>
-
         </div>
 
-        {/* INSTRUCCIONES */}
+        {/* ========================================================================= */}
+        {/* NUEVA SECCIÓN BANNER OLEUMS TIPO PORTADA FACEBOOK */}
+        {/* ========================================================================= */}
+        <div className="w-full max-w-4xl my-24 relative flex flex-col items-center">
+          <Link href="/oleums" className="w-full relative block group">
+            
+            {/* Contenedor del Banner */}
+            <div className="w-full h-48 md:h-72 relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-[0_0_40px_rgba(168,85,247,0.2)] group-hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] transition-all duration-500 bg-black/60">
+              
+              {/* Imagen panorámica (Sustituir con public/oleums-banner.jpg) */}
+              <Image 
+                src="/oleums-banner.jpg" 
+                alt="Arquetipos de Oleums" 
+                fill 
+                style={{ objectFit: "cover" }}
+                className="opacity-60 group-hover:opacity-100 transition-opacity duration-700" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+              
+              {/* Gradiente oscuro para que el texto destaque */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end items-center pb-8 px-4 text-center">
+                <span className="text-[10px] md:text-xs tracking-[0.3em] font-medieval text-green-300 uppercase mb-2">Próximo Lanzamiento</span>
+                <h3 className="text-2xl md:text-4xl font-cinzel text-purple-200 drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] mb-5">
+                  Línea de Oleums Ceremoniales
+                </h3>
+                
+                <span className="px-6 py-2.5 md:py-3 bg-purple-900/80 border border-purple-500/50 text-white font-medieval text-sm rounded-lg group-hover:bg-purple-700 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                  Explorar la Colección →
+                </span>
+              </div>
+
+            </div>
+          </Link>
+        </div>
+        {/* ========================================================================= */}
+
+        {/* INSTRUCCIONES DE COMPRA */}
         <div id="instrucciones" className="w-full max-w-3xl text-left border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md p-8 mb-20 shadow-xl">
           <h3 className="text-2xl font-cinzel text-green-300 mb-6 text-center">Instrucciones de Compra y Entrega</h3>
-          
           <div className="space-y-4 font-medieval text-gray-300">
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">1</span>
               <p className="mt-1">Selecciona el idioma de tu preferencia (Español o Inglés) y realiza tu compra ingresando tu correo electrónico.</p>
             </div>
-            
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">2</span>
               <p className="mt-1">Recibirás un correo electrónico automático confirmando tu orden de preventa.</p>
             </div>
-
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">3</span>
               <p className="mt-1">El <strong>23 de septiembre</strong> te enviaremos el e-book <em>Demonios del Verum</em> en la versión elegida directo a tu correo electrónico.</p>
             </div>
-
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-purple-900/60 border border-purple-500/40 flex items-center justify-center text-purple-300 font-bold shrink-0">4</span>
               <p className="mt-1">
@@ -448,27 +463,11 @@ export default function Home() {
                 </div>
               )}
             </div>
-
-            <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
-              <button 
-                onClick={() => toggleFaq(4)}
-                className="w-full p-5 text-left flex justify-between items-center text-gray-200 hover:text-green-300 transition-colors font-semibold cursor-pointer"
-              >
-                <span>¿Qué pasa si compro y aún no es el 23 de septiembre?</span>
-                <span className="text-xl text-purple-400">{openFaq === 4 ? "−" : "+"}</span>
-              </button>
-              {openFaq === 4 && (
-                <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                  Tu compra queda registrada de forma segura como preventa. Recibirás la confirmación inmediata en tu correo y el libro puntualmente el 23 de septiembre, junto con los accesos a tu cuenta y la confirmación de tu regalo de <em>Magia Olímpica</em>.
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
       </div>
 
-      {/* FOOTER */}
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
           <div className="flex items-center gap-4 text-gray-400 text-sm">
@@ -498,9 +497,7 @@ export default function Home() {
             >
               ✕
             </button>
-
             <h3 className="text-2xl font-cinzel text-green-300 mb-3 text-center">Confirmación de Preventa</h3>
-
             <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4 text-sm space-y-2">
               <div className="flex justify-between font-semibold items-center">
                 <span>Demonios del Verum (Preventa)</span>
@@ -513,7 +510,6 @@ export default function Home() {
                 🎁 Incluye gratis: e-book <strong>Magia Olímpica</strong> (23 Oct).
               </p>
             </div>
-
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1.5">Idioma del e-book:</label>
               <div className="grid grid-cols-2 gap-3">
@@ -541,7 +537,6 @@ export default function Home() {
                 </button>
               </div>
             </div>
-
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
               <input 
@@ -553,7 +548,6 @@ export default function Home() {
                 className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-400 font-sans text-sm"
               />
             </div>
-
             <div className="mb-6 text-xs text-gray-300">
               <label className="flex items-start gap-3 cursor-pointer bg-green-950/20 p-3 rounded-lg border border-green-500/20">
                 <input 
@@ -571,7 +565,6 @@ export default function Home() {
                 </span>
               </label>
             </div>
-
             <button
               disabled={!termsAccepted || !checkoutEmail}
               onClick={handleProceedToPayment}
@@ -597,12 +590,10 @@ export default function Home() {
             >
               ✕
             </button>
-
             <h3 className="text-2xl font-cinzel text-purple-300 mb-2 text-center">Prueba Gratuita</h3>
             <p className="text-xs text-gray-300 text-center mb-5 leading-relaxed">
               Selecciona tu idioma e ingresa tu correo para recibir la muestra gratuita de <strong>Demonios del Verum</strong>.
             </p>
-
             <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
               <div>
                 <label className="block text-xs text-purple-300 mb-1.5">Idioma deseado:</label>
@@ -631,7 +622,6 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs text-purple-300 mb-1">Correo electrónico:</label>
                 <input 
@@ -643,7 +633,6 @@ export default function Home() {
                   className="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-sans"
                 />
               </div>
-
               <button
                 type="submit"
                 className="w-full py-3.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg font-medieval text-md transition-all duration-300 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.4)] cursor-pointer"
@@ -665,46 +654,17 @@ export default function Home() {
             >
               ✕
             </button>
-
             <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center">Términos, Condiciones y Políticas de Privacidad</h3>
-
             <div className="space-y-6 text-sm leading-relaxed text-gray-300 pr-2">
               <section>
                 <h4 className="font-bold text-green-300 text-md mb-2">1. Naturaleza del contenido</h4>
-                <p>Los productos que vendemos (ebooks, grimorios, guías rituales) son conocimiento esotérico para adultos, ofrecido con fines educativos y de práctica personal. No constituyen asesoría médica, psicológica, financiera ni legal. Usas este contenido bajo tu propio riesgo. Debes ser mayor de 18 años para comprar en este sitio.</p>
+                <p>Los productos que vendemos son conocimiento esotérico para adultos, ofrecido con fines educativos y de práctica personal. No constituyen asesoría médica, psicológica, financiera ni legal. Usas este contenido bajo tu propio riesgo. Debes ser mayor de 18 años para comprar en este sitio.</p>
               </section>
-
               <section>
                 <h4 className="font-bold text-green-300 text-md mb-2">2. Compras, entrega y preventa</h4>
-                <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente (23 de Septiembre para Demonios del Verum y 23 de Octubre para Magia Olímpica). Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF en el idioma elegido (Español o Inglés) y los accesos a tu cuenta de usuario creada automáticamente. Los pagos son procesados de forma segura por Stripe.</p>
-              </section>
-
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">3. Reembolsos y Excepciones</h4>
-                <p>La venta de ebooks es final. No hay reembolsos una vez entregado el producto. Si cancelas tu compra antes de la fecha de entrega (en preventa), tienes derecho a reembolso completo. Clientes internacionales/UE aceptan expresamente la entrega digital sin derecho de desistimiento una vez enviado el material.</p>
-              </section>
-
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">4. Propiedad y uso permitido</h4>
-                <p>Todo el contenido es propiedad de Praxis Magick y está protegido por derechos de autor. Tu compra concede una licencia de uso personal no transferible. Queda estrictamente prohibida la redistribución, reventa o publicación parcial o total.</p>
-              </section>
-
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">5. Tu cuenta de usuario</h4>
-                <p>Al entregarse tu producto el 23 de septiembre se generará tu cuenta de usuario para respaldo en tu biblioteca personal. Eres responsable de mantener segura tu contraseña. Nos reservamos el derecho de suspender cuentas que incumplan estos términos.</p>
-              </section>
-
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">6. Tus datos y derechos</h4>
-                <p>Recabamos únicamente tu correo y nombre para entregarte el producto y dar acceso a tu biblioteca. Puedes solicitar la corrección o eliminación de tus datos escribiendo a <strong>lamagick99@gmail.com</strong>.</p>
-              </section>
-
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">7. Cookies y Legislación</h4>
-                <p>Usamos cookies esenciales para la sesión y el pago seguro. Estos términos se rigen por las leyes aplicables en México.</p>
+                <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente. Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF en el idioma elegido y los accesos a tu cuenta de usuario.</p>
               </section>
             </div>
-
             <div className="mt-8 text-center">
               <button 
                 onClick={() => setShowLegalModal(false)}
