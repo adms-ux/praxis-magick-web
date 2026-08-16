@@ -39,7 +39,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // TORMENTA ELÉCTRICA FRACTAL EN CANVAS
+  // TORMENTA ELÉCTRICA CON RESILIENCIA A CAMBIO DE PANTALLA Y RETROCESO
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -47,15 +47,17 @@ export default function Home() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let width = 0;
+    let height = 0;
 
-    const handleResize = () => {
+    const resizeCanvas = () => {
       if (!canvas) return;
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     };
-    window.addEventListener("resize", handleResize);
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
     interface Lightning {
       branches: Lightning[];
@@ -70,25 +72,25 @@ export default function Home() {
       const path: { x: number; y: number }[] = [{ x: x1, y: y1 }];
       let currentX = x1;
       let currentY = y1;
-      const steps = 15 + Math.random() * 10;
+      const steps = 18 + Math.random() * 8;
       const dy = (y2 - y1) / steps;
 
       for (let i = 0; i < steps; i++) {
-        currentX += (Math.random() - 0.5) * 40;
+        currentX += (Math.random() - 0.5) * 45;
         currentY += dy;
         path.push({ x: currentX, y: currentY });
       }
 
       const branches: Lightning[] = [];
-      if (depth < 2 && Math.random() > 0.4) {
+      if (depth < 2 && Math.random() > 0.35) {
         const branchIndex = Math.floor(Math.random() * (path.length - 2)) + 1;
         const branchStart = path[branchIndex];
         branches.push(
           createLightningPath(
             branchStart.x,
             branchStart.y,
-            branchStart.x + (Math.random() - 0.5) * 200,
-            branchStart.y + 150 + Math.random() * 100,
+            branchStart.x + (Math.random() - 0.5) * 220,
+            branchStart.y + 140 + Math.random() * 100,
             depth + 1
           )
         );
@@ -99,8 +101,8 @@ export default function Home() {
 
     const triggerStrike = () => {
       const startX = Math.random() * width;
-      const endX = startX + (Math.random() - 0.5) * 300;
-      const endY = height * (0.6 + Math.random() * 0.3);
+      const endX = startX + (Math.random() - 0.5) * 320;
+      const endY = height * (0.55 + Math.random() * 0.35);
       activeLightnings.push(createLightningPath(startX, 0, endX, endY));
       flashAlpha = 0.35 + Math.random() * 0.25;
     };
@@ -113,14 +115,14 @@ export default function Home() {
       for (let i = 1; i < bolt.path.length; i++) {
         ctx.lineTo(bolt.path[i].x, bolt.path[i].y);
       }
-      ctx.strokeStyle = `rgba(230, 200, 255, ${bolt.alpha})`;
+      ctx.strokeStyle = `rgba(235, 210, 255, ${bolt.alpha})`;
       ctx.lineWidth = 2.5;
-      ctx.shadowColor = "#a855f7";
+      ctx.shadowColor = "#c084fc";
       ctx.shadowBlur = 18;
       ctx.stroke();
 
       bolt.branches.forEach((branch) => {
-        branch.alpha = bolt.alpha * 0.7;
+        branch.alpha = bolt.alpha * 0.65;
         drawLightning(branch);
       });
     };
@@ -143,7 +145,7 @@ export default function Home() {
       });
 
       nextStrikeTimer++;
-      if (nextStrikeTimer > 180 + Math.random() * 240) {
+      if (nextStrikeTimer > 160 + Math.random() * 220) {
         triggerStrike();
         nextStrikeTimer = 0;
       }
@@ -153,8 +155,18 @@ export default function Home() {
 
     render();
 
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        resizeCanvas();
+        cancelAnimationFrame(animationFrameId);
+        render();
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("pageshow", handlePageShow);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -200,22 +212,21 @@ export default function Home() {
         .font-medieval { font-family: var(--font-medieval); }
       `}</style>
 
-      {/* FONDO SUAVE SIN BANDING (GRADIENTES NATIVOS) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.25),rgba(0,0,0,0.95))]">
-        
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.35),transparent_70%)]" />
+      {/* AMBIENTE DE FONDO SUAVE */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.22),rgba(0,0,0,0.98))]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.3),transparent_75%)]" />
 
-        <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+        <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none w-full h-full" />
 
-        {/* LUNA PÚRPURA */}
-        <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-24 h-24 md:w-36 md:h-36 z-0">
-          <div className="absolute inset-0 rounded-full bg-purple-500/20 blur-[30px] animate-pulse"></div>
+        {/* LUNA PÚRPURA CON HALO SIN BANDING */}
+        <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-28 h-28 md:w-36 md:h-36 z-0 flex items-center justify-center">
+          <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35)_0%,rgba(168,85,247,0.08)_45%,transparent_70%)] animate-pulse" />
           <Image 
             src="/luna.png" 
             alt="Luna Púrpura" 
             width={150} 
             height={150} 
-            className="object-contain drop-shadow-[0_0_25px_rgba(168,85,247,0.8)]" 
+            className="relative z-10 object-contain drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]" 
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         </div>
@@ -248,7 +259,7 @@ export default function Home() {
           Praxis Magick
         </h1>
 
-        {/* CONTADOR REGRESIVO */}
+        {/* CONTADOR */}
         <div className="px-6 md:px-10 py-6 mb-10 mt-4 border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.8)]">
           <p className="text-4xl md:text-6xl font-mono text-green-400 tracking-widest drop-shadow-[0_0_15px_rgba(74,222,128,0.6)]">
             {formatNumber(timeLeft.days)}:{formatNumber(timeLeft.hours)}:{formatNumber(timeLeft.minutes)}:{formatNumber(timeLeft.seconds)}
@@ -380,7 +391,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* FAQ */}
+        {/* PREGUNTAS FRECUENTES */}
         <div id="faq" className="w-full max-w-3xl text-left mb-24">
           <h3 className="text-3xl font-cinzel text-purple-300 mb-8 text-center">Preguntas Frecuentes</h3>
           
@@ -469,7 +480,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* MODAL CHECKOUT DE PREVENTA */}
+      {/* MODAL CHECKOUT */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(34,197,94,0.3)] font-medieval text-gray-200">
@@ -495,7 +506,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* SELECTOR DE IDIOMA */}
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1.5">Idioma del e-book:</label>
               <div className="grid grid-cols-2 gap-3">
@@ -524,7 +534,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* CAPTURA DE CORREO */}
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
               <input 
@@ -537,7 +546,6 @@ export default function Home() {
               />
             </div>
 
-            {/* CASILLA LEGAL */}
             <div className="mb-6 text-xs text-gray-300">
               <label className="flex items-start gap-3 cursor-pointer bg-green-950/20 p-3 rounded-lg border border-green-500/20">
                 <input 
