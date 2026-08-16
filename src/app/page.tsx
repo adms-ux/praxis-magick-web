@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function Home() {
@@ -12,10 +12,17 @@ export default function Home() {
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
   
-  // CHECKOUT & CAPTURA
+  // FORMULARIOS DE CAPTURA & IDIOMAS
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [freeTrialEmail, setFreeTrialEmail] = useState("");
+  const [checkoutEmail, setCheckoutEmail] = useState("");
+  const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
 
+  const [freeTrialEmail, setFreeTrialEmail] = useState("");
+  const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // COUNTDOWN REGRESIVO
   useEffect(() => {
     const targetDate = new Date(2026, 8, 23, 23, 59, 59).getTime();
     const interval = setInterval(() => {
@@ -33,6 +40,135 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // SISTEMA DE TORMENTA ELÉCTRICA CON CANVAS (RAYOS FRACTALES REALISTAS)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", handleResize);
+
+    interface Lightning {
+      x: number;
+      y: number;
+      xEnd: number;
+      yEnd: number;
+      branches: Lightning[];
+      alpha: number;
+      path: { x: number; y: number }[];
+    }
+
+    let activeLightnings: Lightning[] = [];
+    let flashAlpha = 0;
+
+    const createLightningPath = (x1: number, y1: number, x2: number, y2: number, depth = 0): Lightning => {
+      const path: { x: number; y: number }[] = [{ x: x1, y: y1 }];
+      let currentX = x1;
+      let currentY = y1;
+      const steps = 15 + Math.random() * 10;
+      const dy = (y2 - y1) / steps;
+
+      for (let i = 0; i < steps; i++) {
+        currentX += (Math.random() - 0.5) * 40;
+        currentY += dy;
+        path.push({ x: currentX, y: currentY });
+      }
+
+      const branches: Lightning[] = [];
+      if (depth < 2 && Math.random() > 0.4) {
+        const branchIndex = Math.floor(Math.random() * (path.length - 2)) + 1;
+        const branchStart = path[branchIndex];
+        branches.push(
+          createLightningPath(
+            branchStart.x,
+            branchStart.y,
+            branchStart.x + (Math.random() - 0.5) * 200,
+            branchStart.y + 150 + Math.random() * 100,
+            depth + 1
+          )
+        );
+      }
+
+      return { x: x1, y: y1, xEnd: x2, yEnd: y2, branches, alpha: 1, path };
+    };
+
+    const triggerStrike = () => {
+      const startX = Math.random() * width;
+      const startY = 0;
+      const endX = startX + (Math.random() - 0.5) * 300;
+      const endY = height * (0.6 + Math.random() * 0.3);
+
+      activeLightnings.push(createLightningPath(startX, startY, endX, endY));
+      flashAlpha = 0.35 + Math.random() * 0.25;
+    };
+
+    let nextStrikeTimer = 0;
+
+    const drawLightning = (bolt: Lightning) => {
+      ctx.beginPath();
+      ctx.moveTo(bolt.path[0].x, bolt.path[0].y);
+      for (let i = 1; i < bolt.path.length; i++) {
+        ctx.lineTo(bolt.path[i].x, bolt.path[i].y);
+      }
+      ctx.strokeStyle = `rgba(220, 180, 255, ${bolt.alpha})`;
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = "#a855f7";
+      ctx.shadowBlur = 18;
+      ctx.stroke();
+
+      bolt.branches.forEach((branch) => {
+        branch.alpha = bolt.alpha * 0.7;
+        drawLightning(branch);
+      });
+    };
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // DESTELLO AMBIENTAL DE LA TORMENTA
+      if (flashAlpha > 0) {
+        ctx.fillStyle = `rgba(168, 85, 247, ${flashAlpha})`;
+        ctx.fillRect(0, 0, width, height);
+        flashAlpha -= 0.03;
+      }
+
+      // RENDERIZAR RAYOS Y BIFURCACIONES
+      activeLightnings.forEach((bolt, index) => {
+        drawLightning(bolt);
+        bolt.alpha -= 0.04;
+        if (bolt.alpha <= 0) {
+          activeLightnings.splice(index, 1);
+        }
+      });
+
+      // CADENCIA DE DISPARO ALEATORIO DE RAYOS
+      nextStrikeTimer++;
+      if (nextStrikeTimer > 180 + Math.random() * 240) {
+        triggerStrike();
+        nextStrikeTimer = 0;
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   const formatNumber = (num: number) => String(num).padStart(2, "0");
 
   const toggleFaq = (index: number) => {
@@ -40,13 +176,22 @@ export default function Home() {
   };
 
   const handleProceedToPayment = () => {
-    alert("Redirigiendo a Stripe para procesar tu pago de $220 MXN ($12.99 USD) de forma segura...");
+    if (!checkoutEmail) {
+      alert("Por favor ingresa tu correo electrónico.");
+      return;
+    }
+    // Redirección a Stripe incluyendo email y versión de idioma elegida
+    const stripeUrl = `https://buy.stripe.com/test_5kQaEYggb4hD0IUfVw1kA00?prefilled_email=${encodeURIComponent(
+      checkoutEmail
+    )}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
+    window.location.href = stripeUrl;
   };
 
   const handleSubmitFreeTrial = (e: React.FormEvent) => {
     e.preventDefault();
     if (freeTrialEmail) {
-      alert(`¡Gracias! En breve enviaremos tu muestra gratuita a: ${freeTrialEmail}`);
+      const idiomaTexto = freeTrialLanguage === "es" ? "Español" : "English";
+      alert(`¡Gracias! En breve enviaremos la muestra gratuita en [${idiomaTexto}] a: ${freeTrialEmail}`);
       setShowFreeTrialModal(false);
       setFreeTrialEmail("");
     }
@@ -55,7 +200,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-black overflow-x-hidden flex flex-col items-center text-white selection:bg-purple-900 selection:text-green-300">
       
-      {/* ANIMACIONES Y EFECTOS CSS (HUMO, PARTÍCULAS Y TORMENTA DE RAYOS MORADOS) */}
+      {/* ESTILOS Y ANIMACIONES */}
       <style>{`
         @keyframes smoke-1 {
           0% { transform: translate(0px, 0px) scale(1); opacity: 0.35; }
@@ -67,56 +212,29 @@ export default function Home() {
           50% { transform: translate(-50px, 30px) scale(1.3); opacity: 0.55; }
           100% { transform: translate(0px, 0px) scale(1); opacity: 0.25; }
         }
+        @keyframes mystic-flame {
+          0%, 100% { opacity: 0.6; transform: scaleY(1); }
+          50% { opacity: 0.95; transform: scaleY(1.15); }
+        }
         @keyframes float-particle {
           0% { transform: translateY(0) scale(1); opacity: 0; }
           50% { opacity: 0.8; }
           100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
         }
 
-        /* ANIMACIÓN DE RELÁMPAGOS/DESTELLOS MORADOS EN EL CIELO */
-        @keyframes sky-flash {
-          0%, 91%, 93%, 96%, 100% { opacity: 0; }
-          92% { opacity: 0.45; }
-          94%, 95% { opacity: 0.8; }
-        }
-
-        /* ANIMACIÓN DE RAYOS VERTICALES/DIAGONALES */
-        @keyframes bolt-strike-1 {
-          0%, 88%, 91%, 100% { opacity: 0; transform: scaleY(0); }
-          89% { opacity: 1; transform: scaleY(1.1) rotate(-12deg); }
-          90% { opacity: 0.4; transform: scaleY(0.9) rotate(-12deg); }
-        }
-
-        @keyframes bolt-strike-2 {
-          0%, 94%, 97%, 100% { opacity: 0; transform: scaleY(0); }
-          95% { opacity: 1; transform: scaleY(1.2) rotate(15deg); }
-          96% { opacity: 0.3; transform: scaleY(0.8) rotate(15deg); }
-        }
-
-        .animate-smoke-1 { animation: smoke-1 16s infinite ease-in-out; }
-        .animate-smoke-2 { animation: smoke-2 22s infinite ease-in-out reverse; }
+        .animate-smoke-1 { animation: smoke-1 18s infinite ease-in-out; }
+        .animate-smoke-2 { animation: smoke-2 24s infinite ease-in-out reverse; }
+        .animate-flame { animation: mystic-flame 4s infinite ease-in-out; }
         .particle { animation: float-particle 12s infinite linear; }
         .font-cinzel { font-family: var(--font-cinzel); }
         .font-medieval { font-family: var(--font-medieval); }
-
-        .sky-lightning { animation: sky-flash 9s infinite ease-in-out; }
-        .bolt-1 { animation: bolt-strike-1 11s infinite ease-in-out; transform-origin: top; }
-        .bolt-2 { animation: bolt-strike-2 14s infinite ease-in-out; transform-origin: top; }
       `}</style>
 
-      {/* AMBIENTE DE FONDO Y TORMENTA MORADA */}
+      {/* FONDO MÍSTICO Y CANVAS DE TORMENTA */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        
-        {/* RESPLANDOR DE DESTELLOS DE TORMENTA EN EL CIELO */}
-        <div className="sky-lightning absolute inset-0 bg-purple-600/30 blur-[90px] mix-blend-screen"></div>
+        <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
 
-        {/* RAYO MORADO 1 (Lado Izquierdo) */}
-        <div className="bolt-1 absolute top-0 left-[20%] w-[3px] h-[70vh] bg-gradient-to-b from-purple-200 via-purple-500 to-transparent shadow-[0_0_20px_rgba(168,85,247,1)]"></div>
-
-        {/* RAYO MORADO 2 (Lado Derecho) */}
-        <div className="bolt-2 absolute top-0 right-[25%] w-[4px] h-[80vh] bg-gradient-to-b from-purple-100 via-fuchsia-500 to-transparent shadow-[0_0_25px_rgba(217,70,239,1)]"></div>
-
-        {/* LUNA */}
+        {/* LUNA PÚRPURA */}
         <div className="absolute top-[8%] right-[8%] md:top-[12%] md:right-[20%] w-24 h-24 md:w-36 md:h-36 z-0">
           <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-[40px] animate-pulse"></div>
           <Image 
@@ -129,12 +247,14 @@ export default function Home() {
           />
         </div>
 
-        {/* HUMO VERDE */}
-        <div className="absolute top-[-10%] left-[-10%] w-[75%] h-[75%] bg-green-700/50 blur-[140px] rounded-full animate-smoke-1"></div>
-        <div className="absolute top-[35%] right-[-10%] w-[80%] h-[80%] bg-green-900/60 blur-[160px] rounded-full animate-smoke-2"></div>
-        <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[150%] h-96 bg-purple-950/60 blur-[140px] rounded-t-full animate-pulse"></div>
+        {/* HUMO VERDE DIFUMINADO */}
+        <div className="absolute top-[-10%] left-[-10%] w-[85%] h-[85%] bg-gradient-radial from-green-600/40 via-green-950/20 to-transparent blur-[120px] animate-smoke-1"></div>
+        <div className="absolute top-[30%] right-[-10%] w-[90%] h-[90%] bg-gradient-radial from-emerald-900/50 via-green-950/20 to-transparent blur-[140px] animate-smoke-2"></div>
+        
+        {/* FUEGO PÚRPURA INFERIOR ANIMADO */}
+        <div className="animate-flame absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[160%] h-[400px] bg-gradient-to-t from-purple-900/90 via-fuchsia-950/50 to-transparent blur-[110px] rounded-t-[100%]"></div>
 
-        {/* PARTÍCULAS FLOTANTES */}
+        {/* PARTÍCULAS */}
         <div className="absolute inset-0">
           <div className="particle absolute left-[15%] bottom-0 w-1.5 h-1.5 bg-green-300 rounded-full blur-[1px]" style={{ animationDelay: '0s' }}></div>
           <div className="particle absolute left-[35%] bottom-0 w-2 h-2 bg-purple-300 rounded-full blur-[1px]" style={{ animationDelay: '3s' }}></div>
@@ -275,7 +395,7 @@ export default function Home() {
           <div className="space-y-4 font-medieval text-gray-300">
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">1</span>
-              <p className="mt-1">Realiza tu compra de forma segura ingresando tu correo electrónico en nuestra pasarela de pago.</p>
+              <p className="mt-1">Selecciona el idioma de tu preferencia (Español o Inglés) y realiza tu compra ingresando tu correo electrónico.</p>
             </div>
             
             <div className="flex items-start gap-4">
@@ -285,13 +405,13 @@ export default function Home() {
 
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">3</span>
-              <p className="mt-1">El <strong>23 de septiembre</strong> te enviaremos el e-book <em>Demonios del Verum</em> directo a tu correo electrónico.</p>
+              <p className="mt-1">El <strong>23 de septiembre</strong> te enviaremos el e-book <em>Demonios del Verum</em> en la versión elegida directo a tu correo electrónico.</p>
             </div>
 
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-purple-900/60 border border-purple-500/40 flex items-center justify-center text-purple-300 font-bold shrink-0">4</span>
               <p className="mt-1">
-                Junto con tu e-book el 23 de septiembre, <strong>recibirás los datos de acceso a tu cuenta de usuario</strong> creada automáticamente. Desde allí podrás descargar y respaldar tu e-book (y <em>Magia Olímpica</em> a partir del 23 de octubre) en cualquier momento.
+                Junto con tu e-book el 23 de septiembre, <strong>recibirás los datos de acceso a tu cuenta de usuario</strong> para descargar y respaldar tu material (y <em>Magia Olímpica</em> a partir del 23 de octubre).
               </p>
             </div>
           </div>
@@ -307,12 +427,12 @@ export default function Home() {
                 onClick={() => toggleFaq(1)}
                 className="w-full p-5 text-left flex justify-between items-center text-gray-200 hover:text-green-300 transition-colors font-semibold cursor-pointer"
               >
-                <span>¿Es un PDF o tengo que leerlo en la plataforma?</span>
+                <span>¿En qué idioma recibiré mi e-book?</span>
                 <span className="text-xl text-purple-400">{openFaq === 1 ? "−" : "+"}</span>
               </button>
               {openFaq === 1 && (
                 <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                  Se enviará a tu correo electrónico en formato PDF. Además, el mismo 23 de septiembre se te enviará la contraseña de tu cuenta para almacenarlo y descargarlo desde tu biblioteca en nuestra página web. Próximamente estará habilitada la lectura en línea.
+                  Contamos con edición en Español e Inglés. Puedes seleccionar la versión deseada al momento de confirmar tu preventa o prueba gratuita.
                 </div>
               )}
             </div>
@@ -322,12 +442,12 @@ export default function Home() {
                 onClick={() => toggleFaq(2)}
                 className="w-full p-5 text-left flex justify-between items-center text-gray-200 hover:text-green-300 transition-colors font-semibold cursor-pointer"
               >
-                <span>¿Puedo compartir mi copia?</span>
+                <span>¿Es un PDF o tengo que leerlo en la plataforma?</span>
                 <span className="text-xl text-purple-400">{openFaq === 2 ? "−" : "+"}</span>
               </button>
               {openFaq === 2 && (
                 <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                  No. Es una obra de distribución exclusiva y de uso personal e intransferible, protegida por derechos de autor.
+                  Se enviará a tu correo electrónico en formato PDF. Además, el mismo 23 de septiembre se te enviará la contraseña de tu cuenta para almacenarlo y descargarlo desde tu biblioteca en nuestra página web. Próximamente estará habilitada la lectura en línea.
                 </div>
               )}
             </div>
@@ -337,10 +457,25 @@ export default function Home() {
                 onClick={() => toggleFaq(3)}
                 className="w-full p-5 text-left flex justify-between items-center text-gray-200 hover:text-green-300 transition-colors font-semibold cursor-pointer"
               >
-                <span>¿Qué pasa si compro y aún no es el 23 de septiembre?</span>
+                <span>¿Puedo compartir mi copia?</span>
                 <span className="text-xl text-purple-400">{openFaq === 3 ? "−" : "+"}</span>
               </button>
               {openFaq === 3 && (
+                <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
+                  No. Es una obra de distribución exclusiva y de uso personal e intransferible, protegida por derechos de autor.
+                </div>
+              )}
+            </div>
+
+            <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
+              <button 
+                onClick={() => toggleFaq(4)}
+                className="w-full p-5 text-left flex justify-between items-center text-gray-200 hover:text-green-300 transition-colors font-semibold cursor-pointer"
+              >
+                <span>¿Qué pasa si compro y aún no es el 23 de septiembre?</span>
+                <span className="text-xl text-purple-400">{openFaq === 4 ? "−" : "+"}</span>
+              </button>
+              {openFaq === 4 && (
                 <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
                   Tu compra queda registrada de forma segura como preventa. Recibirás la confirmación inmediata en tu correo y el libro puntualmente el 23 de septiembre, junto con los accesos a tu cuenta y la confirmación de tu regalo de <em>Magia Olímpica</em>.
                 </div>
@@ -371,7 +506,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* MODAL CHECKOUT */}
+      {/* MODAL CHECKOUT DE PREVENTA CON SELECTOR DE IDIOMA Y CAPTURA DE CORREO */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(34,197,94,0.3)] font-medieval text-gray-200">
@@ -382,9 +517,9 @@ export default function Home() {
               ✕
             </button>
 
-            <h3 className="text-2xl font-cinzel text-green-300 mb-4 text-center">Confirmación de Preventa</h3>
+            <h3 className="text-2xl font-cinzel text-green-300 mb-3 text-center">Confirmación de Preventa</h3>
 
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6 text-sm space-y-2">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4 text-sm space-y-2">
               <div className="flex justify-between font-semibold items-center">
                 <span>Demonios del Verum (Preventa)</span>
                 <div className="text-right">
@@ -395,11 +530,51 @@ export default function Home() {
               <p className="text-xs text-purple-300 border-t border-white/10 pt-2 mt-2">
                 🎁 Incluye gratis: e-book <strong>Magia Olímpica</strong> (23 Oct).
               </p>
-              <p className="text-xs text-gray-300">
-                📩 Entrega en PDF a tu correo el 23 de Septiembre + acceso a tu cuenta.
-              </p>
             </div>
 
+            {/* SELECTOR DE IDIOMA */}
+            <div className="mb-4">
+              <label className="block text-xs text-green-300 mb-1.5">Idioma del e-book:</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCheckoutLanguage("es")}
+                  className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    checkoutLanguage === "es"
+                      ? "bg-green-900/60 border-green-400 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+                      : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"
+                  }`}
+                >
+                  <span>🇪🇸</span> Español
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutLanguage("en")}
+                  className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    checkoutLanguage === "en"
+                      ? "bg-green-900/60 border-green-400 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+                      : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"
+                  }`}
+                >
+                  <span>🇺🇸</span> English
+                </button>
+              </div>
+            </div>
+
+            {/* CAPTURA DE CORREO */}
+            <div className="mb-4">
+              <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
+              <input 
+                type="email" 
+                required
+                placeholder="tu@email.com" 
+                value={checkoutEmail}
+                onChange={(e) => setCheckoutEmail(e.target.value)}
+                className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-400 font-sans text-sm"
+              />
+            </div>
+
+            {/* CASILLA LEGAL */}
             <div className="mb-6 text-xs text-gray-300">
               <label className="flex items-start gap-3 cursor-pointer bg-green-950/20 p-3 rounded-lg border border-green-500/20">
                 <input 
@@ -419,21 +594,21 @@ export default function Home() {
             </div>
 
             <button
-              disabled={!termsAccepted}
+              disabled={!termsAccepted || !checkoutEmail}
               onClick={handleProceedToPayment}
               className={`w-full py-4 rounded-lg font-medieval text-lg transition-all duration-300 border ${
-                termsAccepted
+                termsAccepted && checkoutEmail
                   ? "bg-green-600 hover:bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.5)] border-green-400 cursor-pointer"
                   : "bg-gray-800 text-gray-500 border-gray-700 cursor-not-allowed"
               }`}
             >
-              Proceder al Pago Seguro ($220 MXN)
+              Proceder al Pago Seguro ({checkoutLanguage === "es" ? "Español" : "English"})
             </button>
           </div>
         </div>
       )}
 
-      {/* MODAL CAPTURA - PRUEBA GRATUITA */}
+      {/* MODAL CAPTURA - PRUEBA GRATUITA CON SELECTOR DE IDIOMA */}
       {showFreeTrialModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-md bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-200">
@@ -445,11 +620,41 @@ export default function Home() {
             </button>
 
             <h3 className="text-2xl font-cinzel text-purple-300 mb-2 text-center">Prueba Gratuita</h3>
-            <p className="text-xs text-gray-300 text-center mb-6 leading-relaxed">
-              Ingresa tu correo electrónico para recibir de inmediato una muestra gratuita exclusiva de <strong>Demonios del Verum</strong>.
+            <p className="text-xs text-gray-300 text-center mb-5 leading-relaxed">
+              Selecciona tu idioma e ingresa tu correo para recibir la muestra gratuita de <strong>Demonios del Verum</strong>.
             </p>
 
             <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
+              
+              {/* SELECTOR DE IDIOMA */}
+              <div>
+                <label className="block text-xs text-purple-300 mb-1.5">Idioma deseado:</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFreeTrialLanguage("es")}
+                    className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      freeTrialLanguage === "es"
+                        ? "bg-purple-900/60 border-purple-400 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.4)]"
+                        : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"
+                    }`}
+                  >
+                    <span>🇪🇸</span> Español
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFreeTrialLanguage("en")}
+                    className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      freeTrialLanguage === "en"
+                        ? "bg-purple-900/60 border-purple-400 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.4)]"
+                        : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"
+                    }`}
+                  >
+                    <span>🇺🇸</span> English
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs text-purple-300 mb-1">Correo electrónico:</label>
                 <input 
@@ -466,7 +671,7 @@ export default function Home() {
                 type="submit"
                 className="w-full py-3.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg font-medieval text-md transition-all duration-300 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.4)] cursor-pointer"
               >
-                Obtener Muestra Gratis
+                Obtener Muestra Gratis ({freeTrialLanguage === "es" ? "Español" : "English"})
               </button>
             </form>
           </div>
@@ -494,7 +699,7 @@ export default function Home() {
 
               <section>
                 <h4 className="font-bold text-green-300 text-md mb-2">2. Compras, entrega y preventa</h4>
-                <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente (23 de Septiembre para Demonios del Verum y 23 de Octubre para Magia Olímpica). Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF y los accesos a tu cuenta de usuario creada automáticamente. Los pagos son procesados de forma segura por Stripe.</p>
+                <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente (23 de Septiembre para Demonios del Verum y 23 de Octubre para Magia Olímpica). Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF en el idioma elegido (Español o Inglés) y los accesos a tu cuenta de usuario creada automáticamente. Los pagos son procesados de forma segura por Stripe.</p>
               </section>
 
               <section>
