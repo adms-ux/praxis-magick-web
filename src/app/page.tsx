@@ -12,7 +12,7 @@ export default function Home() {
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
   
-  // FORMULARIOS DE CAPTURA & IDIOMAS
+  // CAPTURA & IDIOMAS
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
@@ -22,7 +22,6 @@ export default function Home() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // COUNTDOWN REGRESIVO
   useEffect(() => {
     const targetDate = new Date(2026, 8, 23, 23, 59, 59).getTime();
     const interval = setInterval(() => {
@@ -40,7 +39,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // SISTEMA DE TORMENTA ELÉCTRICA CON CANVAS (RAYOS FRACTALES REALISTAS)
+  // TORMENTA ELÉCTRICA FRACTAL EN CANVAS
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -59,10 +58,6 @@ export default function Home() {
     window.addEventListener("resize", handleResize);
 
     interface Lightning {
-      x: number;
-      y: number;
-      xEnd: number;
-      yEnd: number;
       branches: Lightning[];
       alpha: number;
       path: { x: number; y: number }[];
@@ -99,16 +94,14 @@ export default function Home() {
         );
       }
 
-      return { x: x1, y: y1, xEnd: x2, yEnd: y2, branches, alpha: 1, path };
+      return { branches, alpha: 1, path };
     };
 
     const triggerStrike = () => {
       const startX = Math.random() * width;
-      const startY = 0;
       const endX = startX + (Math.random() - 0.5) * 300;
       const endY = height * (0.6 + Math.random() * 0.3);
-
-      activeLightnings.push(createLightningPath(startX, startY, endX, endY));
+      activeLightnings.push(createLightningPath(startX, 0, endX, endY));
       flashAlpha = 0.35 + Math.random() * 0.25;
     };
 
@@ -120,7 +113,7 @@ export default function Home() {
       for (let i = 1; i < bolt.path.length; i++) {
         ctx.lineTo(bolt.path[i].x, bolt.path[i].y);
       }
-      ctx.strokeStyle = `rgba(220, 180, 255, ${bolt.alpha})`;
+      ctx.strokeStyle = `rgba(230, 200, 255, ${bolt.alpha})`;
       ctx.lineWidth = 2.5;
       ctx.shadowColor = "#a855f7";
       ctx.shadowBlur = 18;
@@ -135,14 +128,12 @@ export default function Home() {
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // DESTELLO AMBIENTAL DE LA TORMENTA
       if (flashAlpha > 0) {
         ctx.fillStyle = `rgba(168, 85, 247, ${flashAlpha})`;
         ctx.fillRect(0, 0, width, height);
         flashAlpha -= 0.03;
       }
 
-      // RENDERIZAR RAYOS Y BIFURCACIONES
       activeLightnings.forEach((bolt, index) => {
         drawLightning(bolt);
         bolt.alpha -= 0.04;
@@ -151,7 +142,6 @@ export default function Home() {
         }
       });
 
-      // CADENCIA DE DISPARO ALEATORIO DE RAYOS
       nextStrikeTimer++;
       if (nextStrikeTimer > 180 + Math.random() * 240) {
         triggerStrike();
@@ -180,7 +170,6 @@ export default function Home() {
       alert("Por favor ingresa tu correo electrónico.");
       return;
     }
-    // Redirección a Stripe incluyendo email y versión de idioma elegida
     const stripeUrl = `https://buy.stripe.com/test_5kQaEYggb4hD0IUfVw1kA00?prefilled_email=${encodeURIComponent(
       checkoutEmail
     )}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
@@ -191,7 +180,7 @@ export default function Home() {
     e.preventDefault();
     if (freeTrialEmail) {
       const idiomaTexto = freeTrialLanguage === "es" ? "Español" : "English";
-      alert(`¡Gracias! En breve enviaremos la muestra gratuita en [${idiomaTexto}] a: ${freeTrialEmail}`);
+      alert(`¡Gracias! Enviaremos la muestra gratuita en [${idiomaTexto}] a: ${freeTrialEmail}`);
       setShowFreeTrialModal(false);
       setFreeTrialEmail("");
     }
@@ -200,43 +189,27 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-black overflow-x-hidden flex flex-col items-center text-white selection:bg-purple-900 selection:text-green-300">
       
-      {/* ESTILOS Y ANIMACIONES */}
       <style>{`
-        @keyframes smoke-1 {
-          0% { transform: translate(0px, 0px) scale(1); opacity: 0.35; }
-          50% { transform: translate(40px, -40px) scale(1.2); opacity: 0.65; }
-          100% { transform: translate(0px, 0px) scale(1); opacity: 0.35; }
-        }
-        @keyframes smoke-2 {
-          0% { transform: translate(0px, 0px) scale(1); opacity: 0.25; }
-          50% { transform: translate(-50px, 30px) scale(1.3); opacity: 0.55; }
-          100% { transform: translate(0px, 0px) scale(1); opacity: 0.25; }
-        }
-        @keyframes mystic-flame {
-          0%, 100% { opacity: 0.6; transform: scaleY(1); }
-          50% { opacity: 0.95; transform: scaleY(1.15); }
-        }
         @keyframes float-particle {
           0% { transform: translateY(0) scale(1); opacity: 0; }
           50% { opacity: 0.8; }
           100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
         }
-
-        .animate-smoke-1 { animation: smoke-1 18s infinite ease-in-out; }
-        .animate-smoke-2 { animation: smoke-2 24s infinite ease-in-out reverse; }
-        .animate-flame { animation: mystic-flame 4s infinite ease-in-out; }
         .particle { animation: float-particle 12s infinite linear; }
         .font-cinzel { font-family: var(--font-cinzel); }
         .font-medieval { font-family: var(--font-medieval); }
       `}</style>
 
-      {/* FONDO MÍSTICO Y CANVAS DE TORMENTA */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {/* FONDO SUAVE SIN BANDING (GRADIENTES NATIVOS) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.25),rgba(0,0,0,0.95))]">
+        
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.35),transparent_70%)]" />
+
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
 
         {/* LUNA PÚRPURA */}
-        <div className="absolute top-[8%] right-[8%] md:top-[12%] md:right-[20%] w-24 h-24 md:w-36 md:h-36 z-0">
-          <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-[40px] animate-pulse"></div>
+        <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-24 h-24 md:w-36 md:h-36 z-0">
+          <div className="absolute inset-0 rounded-full bg-purple-500/20 blur-[30px] animate-pulse"></div>
           <Image 
             src="/luna.png" 
             alt="Luna Púrpura" 
@@ -246,13 +219,6 @@ export default function Home() {
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         </div>
-
-        {/* HUMO VERDE DIFUMINADO */}
-        <div className="absolute top-[-10%] left-[-10%] w-[85%] h-[85%] bg-gradient-radial from-green-600/40 via-green-950/20 to-transparent blur-[120px] animate-smoke-1"></div>
-        <div className="absolute top-[30%] right-[-10%] w-[90%] h-[90%] bg-gradient-radial from-emerald-900/50 via-green-950/20 to-transparent blur-[140px] animate-smoke-2"></div>
-        
-        {/* FUEGO PÚRPURA INFERIOR ANIMADO */}
-        <div className="animate-flame absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[160%] h-[400px] bg-gradient-to-t from-purple-900/90 via-fuchsia-950/50 to-transparent blur-[110px] rounded-t-[100%]"></div>
 
         {/* PARTÍCULAS */}
         <div className="absolute inset-0">
@@ -292,7 +258,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* NAVEGACIÓN RÁPIDA */}
+        {/* NAVEGACIÓN */}
         <div className="flex flex-wrap justify-center gap-4 mb-16 text-sm font-medieval text-gray-300">
           <a href="#instrucciones" className="hover:text-green-400 transition-colors border-b border-transparent hover:border-green-400 pb-0.5">
             ↓ Instrucciones de compra
@@ -303,10 +269,9 @@ export default function Home() {
           </a>
         </div>
 
-        {/* SECCIÓN PRINCIPAL DEL LIBRO */}
+        {/* SECCIÓN LIBRO */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-left mb-20 items-center">
           
-          {/* PORTADA */}
           <div className="flex justify-center order-2 md:order-1">
             <div className="w-64 h-96 border border-green-500/30 bg-black/70 flex items-center justify-center shadow-[0_0_35px_rgba(21,128,61,0.35)] transform transition-transform hover:scale-105 duration-500 rounded-sm overflow-hidden">
               <Image 
@@ -358,10 +323,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTONES PRINCIPALES DE ACCIÓN */}
+        {/* BOTONES */}
         <div className="flex flex-col sm:flex-row gap-6 w-full justify-center items-center mb-24">
           
-          {/* BOTÓN PREVENTA CON PRECIOS TACHADOS */}
           <button 
             onClick={() => setShowCheckoutModal(true)}
             className="flex flex-col items-center justify-center px-8 py-4 bg-green-700/90 text-white rounded-xl font-medieval transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 hover:bg-green-600 hover:shadow-[0_10px_30px_rgba(34,197,94,0.6)] border border-green-500/50 cursor-pointer min-w-[280px]"
@@ -378,7 +342,6 @@ export default function Home() {
             </div>
           </button>
 
-          {/* BOTÓN PRUEBA GRATUITA */}
           <button 
             onClick={() => setShowFreeTrialModal(true)}
             className="px-8 py-5 bg-transparent border-2 border-purple-600/80 hover:border-purple-400 text-purple-200 rounded-xl font-medieval text-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 hover:bg-purple-950/40 hover:shadow-[0_10px_30px_rgba(168,85,247,0.4)] cursor-pointer min-w-[280px]"
@@ -388,7 +351,7 @@ export default function Home() {
 
         </div>
 
-        {/* INSTRUCCIONES DE COMPRA */}
+        {/* INSTRUCCIONES */}
         <div id="instrucciones" className="w-full max-w-3xl text-left border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md p-8 mb-20 shadow-xl">
           <h3 className="text-2xl font-cinzel text-green-300 mb-6 text-center">Instrucciones de Compra y Entrega</h3>
           
@@ -417,7 +380,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* PREGUNTAS FRECUENTES */}
+        {/* FAQ */}
         <div id="faq" className="w-full max-w-3xl text-left mb-24">
           <h3 className="text-3xl font-cinzel text-purple-300 mb-8 text-center">Preguntas Frecuentes</h3>
           
@@ -506,7 +469,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* MODAL CHECKOUT DE PREVENTA CON SELECTOR DE IDIOMA Y CAPTURA DE CORREO */}
+      {/* MODAL CHECKOUT DE PREVENTA */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(34,197,94,0.3)] font-medieval text-gray-200">
@@ -608,7 +571,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL CAPTURA - PRUEBA GRATUITA CON SELECTOR DE IDIOMA */}
+      {/* MODAL PRUEBA GRATUITA */}
       {showFreeTrialModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-md bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-200">
@@ -625,8 +588,6 @@ export default function Home() {
             </p>
 
             <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
-              
-              {/* SELECTOR DE IDIOMA */}
               <div>
                 <label className="block text-xs text-purple-300 mb-1.5">Idioma deseado:</label>
                 <div className="grid grid-cols-2 gap-3">
@@ -678,7 +639,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL POLÍTICAS Y CONDICIONES */}
+      {/* MODAL LEGAL */}
       {showLegalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="relative w-full max-w-2xl max-h-[85vh] bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-300 overflow-y-auto">
