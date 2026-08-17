@@ -75,7 +75,6 @@ const CinematicFog = ({ activeRgb }: { activeRgb: string }) => {
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = "screen";
 
-      // Crear 3 grandes orbes de luz/humo que se mueven con matemáticas de ondas (Lissajous)
       for (let i = 0; i < 3; i++) {
         const cx = width / 2 + Math.sin(time + i * 2) * (width * 0.3);
         const cy = height * 0.7 + Math.cos(time * 0.8 + i) * (height * 0.2);
@@ -115,9 +114,8 @@ export default function OleumsPage() {
 
   const current = OLEUMS_DATA[idx];
 
-  // Efecto de Paralaje Suave
   const handleMouseMove = (e: React.MouseEvent) => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 20; // max 20px movimiento
+    const x = (e.clientX / window.innerWidth - 0.5) * 20; 
     const y = (e.clientY / window.innerHeight - 0.5) * 20;
     setMousePos({ x, y });
   };
@@ -130,20 +128,16 @@ export default function OleumsPage() {
       className="min-h-screen bg-[#050505] text-gray-200 flex flex-col items-center overflow-x-hidden relative font-sans"
       onMouseMove={handleMouseMove}
     >
-      {/* 1. Fondo Cinemático Recreado */}
       <CinematicFog activeRgb={current.rgb} />
 
-      {/* 2. Capa de Contenido Base */}
       <div className="relative z-10 w-full max-w-5xl flex flex-col min-h-screen px-6 py-8">
         
-        {/* Header y Navegación */}
         <header className="w-full flex justify-between items-center mb-10">
           <Link href="/" className="text-gray-400 hover:text-white transition-colors tracking-widest text-xs border border-white/10 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-md uppercase">
             « Volver al umbral
           </Link>
         </header>
 
-        {/* LOGO PNG: Título Principal de la Línea (Recto) */}
         <div className="w-full flex justify-center mb-12 h-12 md:h-16 relative">
           <Image 
              src="/oleums-main.png" 
@@ -157,9 +151,6 @@ export default function OleumsPage() {
           />
         </div>
 
-        {/* ========================================== */}
-        {/* ZONA DE INVOCACIÓN (CARRUSEL CINEMÁTICO) */}
-        {/* ========================================== */}
         <div className="flex-grow flex flex-col items-center justify-center w-full relative mb-16">
           
           <div className="flex justify-between items-center w-full max-w-3xl absolute top-1/2 -translate-y-1/2 z-30 px-2 md:px-0">
@@ -169,12 +160,10 @@ export default function OleumsPage() {
 
           <div 
             className="flex flex-col items-center justify-center w-full transition-all duration-1000 ease-in-out"
-            style={{ transform: `translate(${-mousePos.x}px, ${-mousePos.y}px)` }} // Paralaje al contenedor entero
+            style={{ transform: `translate(${-mousePos.x}px, ${-mousePos.y}px)` }} 
           >
              
-             {/* FRASCO (PNG Flotante) */}
              <div className="relative w-48 h-72 md:w-64 md:h-96 flex items-center justify-center mb-8">
-               {/* Sombra base debajo del frasco */}
                <div className="absolute bottom-[-10%] w-[60%] h-[10px] bg-black blur-[10px] rounded-[100%]" />
                
                <Image 
@@ -182,17 +171,14 @@ export default function OleumsPage() {
                  alt={current.name} 
                  fill 
                  className="object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.9)] transition-all duration-700"
-                 // Fallback por si la imagen PNG aún no existe, mostramos un rectángulo oscuro provisional
                  onError={(e) => { e.currentTarget.style.opacity = '0'; }}
                />
-               {/* Resplandor tras el frasco */}
                <div 
                  className="absolute inset-0 -z-10 blur-[60px] opacity-30 transition-all duration-1000 rounded-full"
                  style={{ backgroundColor: current.color }}
                />
              </div>
 
-             {/* TÍTULO EN ARCO (PNG) */}
              <div className="w-full max-w-[280px] h-20 md:h-28 relative flex justify-center items-center mb-6">
                 <Image 
                   src={current.titleImage}
@@ -207,7 +193,6 @@ export default function OleumsPage() {
                 />
              </div>
 
-             {/* ESPÍRITU Y CATEGORÍA */}
              <div className="flex flex-col items-center gap-2 mb-8">
                <span className="text-xs uppercase tracking-[0.3em] text-gray-400 font-sans border-b border-white/10 pb-2">
                  {current.category}
@@ -222,11 +207,7 @@ export default function OleumsPage() {
           </div>
         </div>
 
-        {/* ========================================== */}
-        {/* TEXTOS, LEYENDAS Y TEASER */}
-        {/* ========================================== */}
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-8 text-center z-20 mb-20">
-          
           <div className="bg-black/40 border border-white/5 backdrop-blur-md p-6 md:p-10 rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <blockquote className="text-sm md:text-base font-medieval text-gray-300 leading-relaxed italic mb-8">
               "{current.legend}"
@@ -240,9 +221,6 @@ export default function OleumsPage() {
           </div>
         </div>
 
-        {/* ========================================== */}
-        {/* FORMULARIO DE CAPTURA (LEADS) */}
-        {/* ========================================== */}
         <div className="w-full max-w-xl mx-auto mb-10 z-20">
           <div 
             className="p-[1px] rounded-2xl bg-gradient-to-b from-white/10 to-transparent transition-all duration-700"
@@ -258,8 +236,7 @@ export default function OleumsPage() {
                 <input 
                   type="email" 
                   placeholder="Tu correo electrónico..." 
-                  className="flex-grow bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none transition-colors"
-                  style={{ focusVisible: { borderColor: current.color } }}
+                  className="flex-grow bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/40 transition-colors"
                   onChange={(e) => setEmail(e.target.value)}
                   value={email}
                 />
