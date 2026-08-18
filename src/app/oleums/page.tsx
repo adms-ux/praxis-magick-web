@@ -11,32 +11,32 @@ const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiple
 const OLEUMS_DATA = [
   { 
     id: "jester", name: "Jester's Road", spirit: "Surgat", category: "Oleum Abre Caminos", color: "#f97316",
-    bg: "/bg-jester.jpg", image: "/frasco-jester.png", titleImage: "/title-jester.png",
+    bg: "/bg-jester.png", image: "/frasco-jester.png", titleImage: "/title-jester.png",
     legend: "En las cortes medievales, solo el bufón podía decirle la verdad al rey sin perder la cabeza. Su locura era su máscara y su astucia, su verdadero poder. Quien camina la senda del bufón no mendiga oportunidades; utiliza el ingenio para crearlas de la nada y abrir las puertas más pesadas."
   },
   { 
     id: "leprechaun", name: "Leprechaun's Hoard", spirit: "Frutimiere", category: "Magia de Abundancia", color: "#10b981",
-    bg: "/bg-leprechaun.jpg", image: "/frasco-leprechaun.png", titleImage: "/title-leprechaun.png",
+    bg: "/bg-leprechaun.png", image: "/frasco-leprechaun.png", titleImage: "/title-leprechaun.png",
     legend: "El duende guarda su tesoro al final de un arco que solo algunos logran ver. Es el espíritu de la oportunidad inesperada y el hallazgo fortuito. Frutimiere es la mano que guía hacia el flujo del circulante, convirtiendo el azar en una aliada constante para atraer abundancia a tu vida."
   },
   { 
     id: "witch", name: "Witch's Glamour", spirit: "Frimost", category: "Magia de Lujuria", color: "#22c55e",
-    bg: "/bg-witch.jpg", image: "/frasco-witch.png", titleImage: "/title-witch.png",
+    bg: "/bg-witch.png", image: "/frasco-witch.png", titleImage: "/title-witch.png",
     legend: "En la Europa antigua, quienes dominaban el arte del glamour tejían redes de fascinación irresistibles. Su presencia era un hechizo magnético. Witch's Glamour despierta esa atracción seductora y carnal, una fuerza que puede ser invocada por cualquier persona para cautivar, sin importar su género u orientación sexual."
   },
   { 
     id: "pope", name: "Pope's Decree", spirit: "Huictigaras", category: "Magia de Dominio", color: "#a855f7",
-    bg: "/bg-pope.jpg", image: "/frasco-pope.png", titleImage: "/title-pope.png",
+    bg: "/bg-pope.png", image: "/frasco-pope.png", titleImage: "/title-pope.png",
     legend: "El Papa no gobernaba con ejércitos, sino con la autoridad absoluta de su palabra. El verdadero control comienza en la mente del otro. Quien logra influir en el pensamiento ajeno, gobierna el territorio sin necesidad de fuerza ni conflicto."
   },
   { 
     id: "king", name: "King's Vault", spirit: "Clauneck", category: "Prosperidad", color: "#eab308",
-    bg: "/bg-king.jpg", image: "/frasco-king.png", titleImage: "/title-king.png",
+    bg: "/bg-king.png", image: "/frasco-king.png", titleImage: "/title-king.png",
     legend: "La riqueza de un rey no se basaba en la fortuna efímera, sino en la impecable arquitectura de su imperio. Clauneck no concede simples golpes de suerte, sino la autoridad, el estatus y la visión necesarias para consolidar una prosperidad sólida, estructural y duradera en el tiempo."
   },
   { 
     id: "danse", name: "Danse Macabre", spirit: "Guland", category: "Magia Funesta", color: "#e2e8f0",
-    bg: "/bg-danse.jpg", image: "/frasco-danse.png", titleImage: "/title-danse.png",
+    bg: "/bg-danse.png", image: "/frasco-danse.png", titleImage: "/title-danse.png",
     legend: "La Danza Macabra era el recordatorio definitivo en los murales antiguos: todo ciclo debe terminar para que otro comience. Guland conoce el ritmo exacto de esta disolución. Aquello que está estancado, nocivo o corrupto en tu entorno debe caer para dejar espacio a una verdadera renovación."
   },
 ];
