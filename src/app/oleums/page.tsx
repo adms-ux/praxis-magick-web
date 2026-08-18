@@ -41,18 +41,47 @@ const OLEUMS_DATA = [
   },
 ];
 
-// ==========================================
-// 2. COMPONENTE PRINCIPAL
-// ==========================================
 export default function OleumsPage() {
   const [idx, setIdx] = useState(0);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estados para animaciones y Swipe
+  const [fade, setFade] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   const current = OLEUMS_DATA[idx];
 
-  const nextOleum = () => setIdx((prev) => (prev === OLEUMS_DATA.length - 1 ? 0 : prev + 1));
-  const prevOleum = () => setIdx((prev) => (prev === 0 ? OLEUMS_DATA.length - 1 : prev - 1));
+  // ==========================================
+  // TRANSICIONES SUAVES Y NAVEGACIÓN
+  // ==========================================
+  const changeOleum = (newIdx: number) => {
+    setFade(true); // Inicia el desvanecimiento a negro
+    setTimeout(() => {
+      setIdx(newIdx);
+      setFade(false); // Revela el nuevo producto
+    }, 400); // 400ms de transición
+  };
+
+  const nextOleum = () => changeOleum(idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
+  const prevOleum = () => changeOleum(idx === 0 ? OLEUMS_DATA.length - 1 : idx - 1);
+
+  // ==========================================
+  // LÓGICA DE SWIPE (DESLIZAR EN MÓVIL)
+  // ==========================================
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX);
+  const handleTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    if (isLeftSwipe) nextOleum();
+    if (isRightSwipe) prevOleum();
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
 
   // ==========================================
   // CONEXIÓN A MAKE.COM / SUPABASE
@@ -60,13 +89,9 @@ export default function OleumsPage() {
   const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    
     setIsSubmitting(true);
     try {
-      // Reemplaza esta URL con el Webhook que generes en Make.com
       const webhookUrl = "URL_DE_TU_WEBHOOK_MAKE_AQUI"; 
-      
-      // Si aún no tienes la URL, esto simulará el envío correctamente.
       if(webhookUrl !== "URL_DE_TU_WEBHOOK_MAKE_AQUI") {
         await fetch(webhookUrl, {
           method: "POST",
@@ -74,14 +99,11 @@ export default function OleumsPage() {
           body: JSON.stringify({ email: email, oleum_interes: current.name }),
         });
       } else {
-        // Simulación de carga (Quitar cuando conectes Make)
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
-
       alert(`¡Gracias! Te avisaremos al correo ${email} cuando ${current.name} esté disponible.`);
       setEmail("");
     } catch (error) {
-      console.error("Error enviando lead:", error);
       alert("Hubo un error. Por favor, inténtalo de nuevo.");
     } finally {
       setIsSubmitting(false);
@@ -91,68 +113,76 @@ export default function OleumsPage() {
   return (
     <main className="min-h-screen bg-black text-gray-200 flex flex-col items-center overflow-x-hidden relative font-sans">
       
-      {/* FONDO FOTOGRÁFICO CON DESVANECIDO EN BORDES */}
+      {/* Importación de fuente Celta Medieval (Uncial Antiqua) */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap');
+        .font-celtic { font-family: 'Uncial Antiqua', cursive; }
+      `}</style>
+
+      {/* FONDO FOTOGRÁFICO CON TRANSICIÓN */}
       <div className="fixed inset-0 w-full h-full z-0 pointer-events-none bg-black">
         <div 
-          className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out opacity-40"
+          className={`absolute inset-0 bg-cover bg-[position:center_top] md:bg-center transition-opacity duration-700 ease-in-out ${fade ? "opacity-0" : "opacity-40"}`}
           style={{ backgroundImage: `url(${current.bg})` }}
         />
-        {/* Este gradiente radial funde los bordes de la imagen con el negro absoluto */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_90%)]" />
       </div>
 
       <div className="relative z-10 w-full max-w-5xl flex flex-col min-h-screen px-6 py-8">
         
-        {/* HEADER LIMPIO Y MODERNO */}
+        {/* HEADER LIMPIO */}
         <header className="w-full flex justify-start mb-8">
-          <Link href="/" className="text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm">
+          <Link href="/" className="text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm z-50">
             « Volver al inicio
           </Link>
         </header>
 
-        {/* LOGO PNG: Título Principal de la Línea (Recto) */}
+        {/* LOGO PRINCIPAL (LÍNEA DE OLEUMS) */}
         <div className="w-full flex justify-center mb-8 h-12 md:h-16 relative">
           <Image 
              src="/oleums-main.png" 
              alt="Línea de Oleums" 
              fill
              className="object-contain"
-             onError={(e) => { 
-               e.currentTarget.style.display = 'none'; 
-               e.currentTarget.parentElement!.innerHTML = `<h1 class="text-2xl md:text-3xl font-cinzel text-white uppercase tracking-widest">Línea de Oleums</h1>`;
-             }}
+             priority
           />
         </div>
 
         {/* ========================================== */}
-        {/* CARRUSEL INMERSIVO */}
+        {/* CARRUSEL INMERSIVO (CON SOPORTE SWIPE) */}
         {/* ========================================== */}
-        <div className="flex flex-col items-center justify-center w-full relative mb-12">
-          
-          <div className="flex justify-between items-center w-full max-w-3xl absolute top-[40%] -translate-y-1/2 z-30 px-0">
-            <button onClick={prevOleum} className="text-4xl md:text-5xl text-gray-400 hover:text-white transition-colors p-4 cursor-pointer focus:outline-none">‹</button>
-            <button onClick={nextOleum} className="text-4xl md:text-5xl text-gray-400 hover:text-white transition-colors p-4 cursor-pointer focus:outline-none">›</button>
+        <div 
+          className="flex flex-col items-center justify-center w-full relative mb-12"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* FLECHAS DIRECCIONALES */}
+          <div className="flex justify-between items-center w-full max-w-3xl absolute top-[40%] -translate-y-1/2 z-30 px-0 pointer-events-none">
+            <button onClick={prevOleum} className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-colors p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">‹</button>
+            <button onClick={nextOleum} className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-colors p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">›</button>
           </div>
 
-          <div className="flex flex-col items-center justify-center w-full">
+          {/* CONTENEDOR DE PRODUCTO CON ANIMACIÓN DE DESVANECIMIENTO */}
+          <div className={`flex flex-col items-center justify-center w-full transition-all duration-500 ease-in-out ${fade ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}>
              
-             {/* FRASCO (PNG Flotante) */}
+             {/* FRASCO */}
              <div className="relative w-48 h-72 md:w-64 md:h-96 flex items-center justify-center mb-6">
                <Image 
                  src={current.image} 
                  alt={current.name} 
                  fill 
-                 className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)] transition-all duration-700 hover:scale-105"
-                 onError={(e) => { e.currentTarget.style.opacity = '0'; }}
+                 className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)] transition-transform duration-700 hover:scale-105"
+                 priority
                />
-               {/* Iluminación de acento sutil detrás del frasco */}
+               {/* Resplandor orgánico sin bordes cuadrados (Radial Gradient) */}
                <div 
-                 className="absolute inset-0 -z-10 blur-[80px] opacity-40 transition-colors duration-1000 rounded-full"
-                 style={{ backgroundColor: current.color }}
+                 className="absolute inset-0 -z-10 scale-150 transition-colors duration-1000"
+                 style={{ background: `radial-gradient(circle, ${current.color}55 0%, transparent 65%)` }}
                />
              </div>
 
-             {/* TÍTULO EN ARCO (PNG) */}
+             {/* TÍTULO EN ARCO */}
              <div className="w-full max-w-[280px] h-20 md:h-28 relative flex justify-center items-center mb-6">
                 <Image 
                   src={current.titleImage}
@@ -160,14 +190,11 @@ export default function OleumsPage() {
                   fill
                   className="object-contain transition-all duration-700"
                   style={{ filter: `drop-shadow(0 5px 15px rgba(0,0,0,0.8))` }}
-                  onError={(e) => { 
-                    e.currentTarget.style.display = 'none'; 
-                    e.currentTarget.parentElement!.innerHTML = `<h2 class="text-3xl font-cinzel font-bold text-center" style="color: ${current.color}">${current.name}</h2>`;
-                  }}
+                  priority
                 />
              </div>
 
-             {/* ESPÍRITU Y CATEGORÍA (UI Limpia) */}
+             {/* ESPÍRITU Y CATEGORÍA */}
              <div className="flex flex-col items-center gap-2 mb-4">
                <span className="text-sm font-semibold tracking-widest uppercase border-b border-white/20 pb-1" style={{ color: current.color }}>
                  {current.category}
@@ -180,19 +207,18 @@ export default function OleumsPage() {
         </div>
 
         {/* ========================================== */}
-        {/* LEYENDAS Y DESCRIPCIÓN COMERCIAL */}
+        {/* LEYENDAS Y DESCRIPCIÓN */}
         {/* ========================================== */}
-        <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-16">
-          
-          <div className="bg-black/60 border border-white/10 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-2xl">
-            {/* LEYENDA (Usa fuente medieval/serif legible) */}
-            <blockquote className="text-base md:text-lg font-medieval text-gray-200 leading-relaxed italic mb-8">
+        <div className={`w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-16 transition-opacity duration-500 ${fade ? "opacity-0" : "opacity-100"}`}>
+          <div className="bg-black/60 border border-white/10 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.6)]">
+            
+            {/* APLICACIÓN DE LA FUENTE CELTA */}
+            <blockquote className="text-xl md:text-2xl font-celtic text-gray-200 leading-relaxed mb-8 tracking-wide">
               "{current.legend}"
             </blockquote>
 
             <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8" />
 
-            {/* TEASER (Usa fuente moderna/sans-serif) */}
             <p className="text-sm font-sans text-gray-400 leading-relaxed px-2 text-justify md:text-center">
               {TEASER_TEXT}
             </p>
@@ -200,7 +226,7 @@ export default function OleumsPage() {
         </div>
 
         {/* ========================================== */}
-        {/* FORMULARIO DE CAPTURA LISTO PARA AUTOMATIZAR */}
+        {/* FORMULARIO DE CAPTURA */}
         {/* ========================================== */}
         <div className="w-full max-w-xl mx-auto mb-10 z-20">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col items-center backdrop-blur-xl">
