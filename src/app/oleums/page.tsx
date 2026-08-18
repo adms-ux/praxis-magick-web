@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -52,6 +52,19 @@ export default function OleumsPage() {
   const [touchEnd, setTouchEnd] = useState(0);
 
   const current = OLEUMS_DATA[idx];
+
+  // ==========================================
+  // MOTOR DE PRECARGA (Carga instantánea)
+  // ==========================================
+  useEffect(() => {
+    OLEUMS_DATA.forEach((item) => {
+      const imagesToPreload = [item.bg, item.bgMobile, item.image, item.titleImage];
+      imagesToPreload.forEach((src) => {
+        const img = new window.Image();
+        img.src = src;
+      });
+    });
+  }, []);
 
   // ==========================================
   // TRANSICIONES SUAVES Y NAVEGACIÓN
@@ -119,8 +132,8 @@ export default function OleumsPage() {
         .font-celtic { font-family: 'Uncial Antiqua', cursive; }
       `}</style>
 
-      {/* FONDO FOTOGRÁFICO RESILIENTE A MÓVILES (100dvh para evitar saltos) */}
-      <div className="fixed inset-0 w-full h-[100dvh] z-0 pointer-events-none bg-black">
+      {/* FONDO FOTOGRÁFICO ANCLADO (Sin saltos en scroll móvil) */}
+      <div className="fixed top-0 bottom-0 left-0 right-0 z-0 pointer-events-none bg-black">
         {/* Fondo versión Móvil (9:16) */}
         <div 
           className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ease-in-out md:hidden ${fade ? "opacity-0" : "opacity-40"}`}
