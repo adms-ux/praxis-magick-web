@@ -8,7 +8,7 @@ import Link from "next/link";
 // ==========================================
 const DEFINICION_OLEOUMS = "Los Oleoums Medievales de Praxis Magick son aceites esenciales intencionados para bendecir o imbuir cualquier objeto ungido con la esencia de la fuerza daemónica o el propósito para el cual fue creado. Se utilizan para ungir objetos, velas o a uno mismo.";
 
-const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que obtendrás de regalo un grimorio digital exclusivo. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida, desde el éxito material hasta el crecimiento personal. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
+const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que habrá varios grimorios digitales exclusivos. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida, desde el éxito material hasta el crecimiento personal. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
 
 const OLEUMS_DATA = [
   { 
@@ -52,18 +52,18 @@ const OLEUMS_DATA = [
     name: "Witch's Glamour", 
     spirit: "Frimost", 
     category: "OLEOUM DE LUJURIA", 
-    color: "#86efac", // Verde claro manzana brillante para contrastar con Leprechaun
+    color: "#86efac",
     bg: "/bg-witch.png", 
     bgMobile: "/bg-witch-mobile.png", 
     image: "/frasco-witch.png", 
     titleImage: "/title-witch.png",
-    legend: "En la Europa antigua, quienes dominaban el arte del glamour tejían redes de fascinación irresistibles. Su presencia era un hechizo magnético. Frimost despierta esa atracción seductora y carnal, una fuerza que puede ser invocada por cualquier persona para cautivar, sin importar su género u orientación sexual."
+    legend: "En la Europa antigua, quienes practicaban la magia dominaban el arte del glamour tejían redes de fascinación irresistibles. Su presencia era un hechizo magnético. Frimost despierta esa atracción seductora y carnal, una fuerza que puede ser invocada por cualquier persona para cautivar, sin importar su género u orientación sexual."
   },
   { 
     id: "king", 
     name: "King's Vault", 
     spirit: "Clauneck", 
-    category: "OLEOUM DE PROSPERIDAD", 
+    category: "OLEOUM DE PROSPERIDAD", s
     color: "#eab308",
     bg: "/bg-king.png", 
     bgMobile: "/bg-king-mobile.png", 
@@ -91,8 +91,7 @@ export default function OleumsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
 
-  // Control de transiciones y Swipe direccional (Ejes X e Y)
-  const [fade, setFade] = useState(false);
+  // Swipe táctil en móvil
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartY, setTouchStartY] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
@@ -100,30 +99,13 @@ export default function OleumsPage() {
 
   const current = OLEUMS_DATA[idx];
 
-  // Precarga de imágenes en caché
-  useEffect(() => {
-    OLEUMS_DATA.forEach((item) => {
-      [item.bg, item.bgMobile, item.image, item.titleImage].forEach((src) => {
-        const img = new window.Image();
-        img.src = src;
-      });
-    });
-  }, []);
-
   const changeOleum = (newIdx: number) => {
-    setFade(true); 
-    setTimeout(() => {
-      setIdx(newIdx);
-      setFade(false); 
-    }, 350); 
+    setIdx(newIdx);
   };
 
   const nextOleum = () => changeOleum(idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
   const prevOleum = () => changeOleum(idx === 0 ? OLEUMS_DATA.length - 1 : idx - 1);
 
-  // ==========================================
-  // LÓGICA DE SWIPE ANTIFANTASMA (X vs Y)
-  // ==========================================
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.targetTouches[0].clientX);
     setTouchStartY(e.targetTouches[0].clientY);
@@ -140,12 +122,10 @@ export default function OleumsPage() {
     const distanceX = touchStartX - touchEndX;
     const distanceY = touchStartY - touchEndY;
 
-    // Si el desplazamiento vertical es mayor, el usuario está haciendo scroll; se cancela el cambio
     if (Math.abs(distanceY) > Math.abs(distanceX)) {
       return;
     }
 
-    // Umbral horizontal de 60px para evitar toques accidentales
     if (distanceX > 60) {
       nextOleum();
     } else if (distanceX < -60) {
@@ -180,7 +160,6 @@ export default function OleumsPage() {
   return (
     <main className="min-h-screen bg-black text-gray-200 flex flex-col items-center overflow-x-hidden relative font-sans selection:bg-purple-950 selection:text-green-300">
       
-      {/* TIPOGRAFÍAS Y ANIMACIONES PERSONALIZADAS */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=MedievalSharp&family=Cinzel:wght@600;700&display=swap');
 
@@ -194,83 +173,73 @@ export default function OleumsPage() {
           font-family: 'Cinzel', 'Times New Roman', Times, serif;
         }
 
-        @keyframes slow-glow-pulse {
-          0%, 100% {
-            filter: drop-shadow(0 0 10px var(--glow-color)) drop-shadow(0 0 20px var(--glow-color));
-            opacity: 0.9;
-          }
-          50% {
-            filter: drop-shadow(0 0 22px var(--glow-color)) drop-shadow(0 0 35px var(--glow-color));
-            opacity: 1;
-          }
+        /* Animación de pulso continuo y suave en títulos */
+        @keyframes soft-pulse {
+          0%, 100% { opacity: 0.85; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.02); }
         }
 
-        @keyframes smoke-drift-1 {
-          0% { transform: translate(-20%, 10%) scale(1) rotate(0deg); opacity: 0; }
-          40% { opacity: 0.45; }
-          70% { opacity: 0.3; }
-          100% { transform: translate(25%, -20%) scale(1.4) rotate(45deg); opacity: 0; }
+        /* Ondulaciones de niebla orgánica verde */
+        @keyframes mist-flow-1 {
+          0% { transform: translate(-30%, -10%) scale(1) rotate(0deg); opacity: 0.35; }
+          50% { transform: translate(20%, 10%) scale(1.35) rotate(15deg); opacity: 0.7; }
+          100% { transform: translate(-30%, -10%) scale(1) rotate(0deg); opacity: 0.35; }
         }
 
-        @keyframes smoke-drift-2 {
-          0% { transform: translate(20%, 15%) scale(1.1) rotate(0deg); opacity: 0; }
-          50% { opacity: 0.4; }
-          80% { opacity: 0.25; }
-          100% { transform: translate(-20%, -15%) scale(1.5) rotate(-35deg); opacity: 0; }
+        @keyframes mist-flow-2 {
+          0% { transform: translate(25%, 15%) scale(1.2) rotate(0deg); opacity: 0.4; }
+          50% { transform: translate(-25%, -15%) scale(1) rotate(-20deg); opacity: 0.75; }
+          100% { transform: translate(25%, 15%) scale(1.2) rotate(0deg); opacity: 0.4; }
         }
 
-        .title-glow-pulse {
-          animation: slow-glow-pulse 4.5s ease-in-out infinite;
+        .anim-title-pulse {
+          animation: soft-pulse 4s ease-in-out infinite;
         }
-        .smoke-layer-1 {
-          animation: smoke-drift-1 9s ease-in-out infinite;
+
+        .mist-blob-1 {
+          animation: mist-flow-1 12s ease-in-out infinite;
+          background: radial-gradient(circle, rgba(34, 197, 94, 0.45) 0%, rgba(16, 185, 129, 0.2) 45%, transparent 70%);
         }
-        .smoke-layer-2 {
-          animation: smoke-drift-2 11s ease-in-out infinite 2.5s;
+
+        .mist-blob-2 {
+          animation: mist-flow-2 15s ease-in-out infinite;
+          background: radial-gradient(circle, rgba(74, 222, 128, 0.4) 0%, rgba(34, 197, 94, 0.15) 50%, transparent 75%);
         }
       `}</style>
 
       {/* ========================================== */}
-      {/* FONDO FLUIDO ANCLADO (100dvh - SIN BRINCOS) */}
+      {/* FONDO ANCLADO TOTAL SIN SALTO DE VIEWPORT */}
       {/* ========================================== */}
-      <div className="fixed top-0 left-0 w-full h-[100dvh] z-0 pointer-events-none bg-black overflow-hidden">
-        {OLEUMS_DATA.map((item, index) => (
-          <div
-            key={item.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              index === idx ? "opacity-35" : "opacity-0"
-            }`}
-          >
-            {/* Móvil */}
-            <div className="relative w-full h-full md:hidden">
-              <Image
-                src={item.bgMobile}
-                alt=""
-                fill
-                priority={index === 0}
-                className="object-cover object-center"
-              />
-            </div>
-            {/* Monitor */}
-            <div className="relative w-full h-full hidden md:block">
-              <Image
-                src={item.bg}
-                alt=""
-                fill
-                priority={index === 0}
-                className="object-cover object-center"
-              />
-            </div>
-          </div>
-        ))}
-        {/* Viñeta perimetral de fundido */}
+      <div className="fixed inset-0 w-full h-full z-0 pointer-events-none bg-black overflow-hidden transform-gpu">
+        {/* Móvil */}
+        <div className="relative w-full h-full md:hidden">
+          <Image
+            src={current.bgMobile}
+            alt="Fondo Oleum Móvil"
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover object-center opacity-40 transition-opacity duration-500"
+          />
+        </div>
+        {/* Monitor */}
+        <div className="relative w-full h-full hidden md:block">
+          <Image
+            src={current.bg}
+            alt="Fondo Oleum Monitor"
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover object-center opacity-40 transition-opacity duration-500"
+          />
+        </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_90%)]" />
       </div>
 
-      {/* CONTENEDOR PRINCIPAL */}
+      {/* CONTENIDO PRINCIPAL */}
       <div className="relative z-10 w-full max-w-5xl flex flex-col min-h-screen px-6 py-6 items-center">
 
-        {/* HEADER: BOTÓN RETORNO Y LOGO CON GLOW PÚRPURA */}
+        {/* HEADER */}
         <header className="w-full flex items-center justify-between mb-8">
           <Link
             href="/"
@@ -279,7 +248,8 @@ export default function OleumsPage() {
             « Volver al inicio
           </Link>
 
-          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-purple-500/40 bg-black/60 backdrop-blur-md flex items-center justify-center p-1 shadow-[0_0_20px_rgba(168,85,247,0.45)] ring-1 ring-purple-500/30">
+          {/* Logo con resplandor circular */}
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-purple-500/40 bg-black/60 backdrop-blur-md flex items-center justify-center p-1.5 shadow-[0_0_25px_rgba(168,85,247,0.5)]">
             <Image
               src="/logo.png"
               alt="Praxis Magick Logo"
@@ -291,34 +261,35 @@ export default function OleumsPage() {
           </div>
         </header>
 
-        {/* LOGO PRINCIPAL CON EFECTO DE HUMO VERDE */}
-        <div className="relative w-full max-w-xl flex justify-center items-center mb-6 h-16 md:h-24">
-          {/* Capas de humo etéreo confinadas */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center -z-10">
-            <div className="smoke-layer-1 absolute w-48 h-32 md:w-72 md:h-40 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.45)_0%,rgba(16,185,129,0.2)_40%,transparent_75%)] blur-2xl" />
-            <div className="smoke-layer-2 absolute w-40 h-28 md:w-64 md:h-36 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(74,222,128,0.35)_0%,rgba(34,197,94,0.15)_45%,transparent_70%)] blur-xl" />
+        {/* TÍTULO PRINCIPAL CON NIEBLA VERDE ORGÁNICA */}
+        <div className="relative w-full max-w-2xl flex justify-center items-center mb-6 py-6 min-h-[100px]">
+          {/* Niebla densa sin bordes de recorte */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10">
+            <div className="mist-blob-1 absolute w-[300px] h-[160px] md:w-[460px] md:h-[200px] rounded-full blur-2xl" />
+            <div className="mist-blob-2 absolute w-[260px] h-[140px] md:w-[400px] md:h-[180px] rounded-full blur-xl" />
           </div>
 
-          <div className="relative w-full h-full">
+          <div className="relative w-full max-w-[340px] md:max-w-[440px] h-16 md:h-20">
             <Image
               src="/oleums-main.png"
               alt="Línea de Oleums"
               fill
-              className="object-contain drop-shadow-[0_0_12px_rgba(34,197,94,0.35)]"
+              sizes="(max-width: 768px) 340px, 440px"
+              className="object-contain"
               priority
             />
           </div>
         </div>
 
-        {/* TEXTO DESCRIPTIVO: DEFINICIÓN DE OLEOUMS */}
+        {/* DEFINICIÓN */}
         <div className="w-full max-w-2xl text-center mb-10 px-4">
-          <p className="font-celtic-clean text-sm md:text-base text-gray-300 leading-relaxed tracking-wide bg-black/40 border border-white/5 backdrop-blur-md p-4 rounded-xl shadow-inner">
+          <p className="font-celtic-clean text-sm md:text-base text-gray-300 leading-relaxed tracking-wide bg-black/50 border border-white/10 backdrop-blur-md p-5 rounded-xl shadow-lg">
             "{DEFINICION_OLEOUMS}"
           </p>
         </div>
 
         {/* ========================================== */}
-        {/* CARRUSEL INMERSIVO CON SWIPE REFORZADO */}
+        {/* CARRUSEL OPTIMIZADO */}
         {/* ========================================== */}
         <div
           className="flex flex-col items-center justify-center w-full relative mb-10"
@@ -331,60 +302,64 @@ export default function OleumsPage() {
             <button
               onClick={prevOleum}
               aria-label="Oleum anterior"
-              className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-transform active:scale-90 p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_12px_rgba(0,0,0,0.9)]"
+              className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-transform active:scale-90 p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_15px_rgba(0,0,0,0.95)]"
             >
               ‹
             </button>
             <button
               onClick={nextOleum}
               aria-label="Siguiente Oleum"
-              className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-transform active:scale-90 p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_12px_rgba(0,0,0,0.9)]"
+              className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-transform active:scale-90 p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_15px_rgba(0,0,0,0.95)]"
             >
               ›
             </button>
           </div>
 
-          {/* CONTENEDOR DEL PRODUCTO ACTIVO */}
-          <div
-            className={`flex flex-col items-center justify-center w-full transition-all duration-350 ease-out ${
-              fade ? "opacity-0 scale-95" : "opacity-100 scale-100"
-            }`}
-          >
-            {/* FRASCO */}
+          {/* CONTENEDOR DEL PRODUCTO */}
+          <div className="flex flex-col items-center justify-center w-full">
+            
+            {/* Frasco con halo orgánico */}
             <div className="relative w-48 h-72 md:w-64 md:h-96 flex items-center justify-center mb-6">
+              <div
+                className="absolute w-56 h-56 md:w-72 md:h-72 rounded-full blur-2xl -z-10 pointer-events-none transition-colors duration-500"
+                style={{
+                  background: `radial-gradient(circle, ${current.color}66 0%, transparent 70%)`,
+                }}
+              />
               <Image
+                key={`img-${current.id}`}
                 src={current.image}
                 alt={current.name}
                 fill
-                className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.95)] transition-transform duration-500 hover:scale-105"
+                sizes="(max-width: 768px) 192px, 256px"
+                className="object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.9)]"
                 priority
-              />
-              <div
-                className="absolute inset-0 -z-10 scale-150 transition-colors duration-700 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle, ${current.color}45 0%, transparent 65%)`,
-                }}
               />
             </div>
 
-            {/* TÍTULO EN ARCO CON ILUMINACIÓN Y PARPADEO */}
-            <div
-              className="w-full max-w-[290px] md:max-w-[340px] h-20 md:h-28 relative flex justify-center items-center mb-6 title-glow-pulse"
-              style={{ "--glow-color": `${current.color}88` } as React.CSSProperties}
-            >
+            {/* Título del Oleum */}
+            <div className="w-full max-w-[290px] md:max-w-[340px] h-20 md:h-28 relative flex justify-center items-center mb-6 anim-title-pulse">
+              <div
+                className="absolute inset-0 blur-xl rounded-full -z-10 pointer-events-none transition-colors duration-500"
+                style={{
+                  background: `radial-gradient(circle, ${current.color}55 0%, transparent 75%)`,
+                }}
+              />
               <Image
+                key={`title-${current.id}`}
                 src={current.titleImage}
                 alt={current.name}
                 fill
+                sizes="(max-width: 768px) 290px, 340px"
                 className="object-contain"
                 priority
               />
             </div>
 
-            {/* CATEGORÍA Y ESPÍRITU */}
+            {/* Categoría y Espíritu */}
             <div className="flex flex-col items-center gap-2 mb-4">
               <span
-                className="font-medieval-title text-base md:text-lg tracking-widest uppercase border-b border-white/20 pb-1 text-center"
+                className="font-medieval-title text-base md:text-lg tracking-widest uppercase border-b border-white/20 pb-1 text-center transition-colors duration-300"
                 style={{ color: current.color }}
               >
                 {current.category}
@@ -398,14 +373,8 @@ export default function OleumsPage() {
           </div>
         </div>
 
-        {/* ========================================== */}
         {/* LEYENDA Y TEASER */}
-        {/* ========================================== */}
-        <div
-          className={`w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-14 transition-opacity duration-350 ${
-            fade ? "opacity-0" : "opacity-100"
-          }`}
-        >
+        <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-14">
           <div className="bg-black/70 border border-white/10 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-[0_0_35px_rgba(0,0,0,0.7)]">
             <blockquote className="text-lg md:text-xl font-celtic-clean text-gray-200 leading-relaxed mb-8 tracking-wide">
               "{current.legend}"
@@ -419,9 +388,7 @@ export default function OleumsPage() {
           </div>
         </div>
 
-        {/* ========================================== */}
         {/* FORMULARIO DE CAPTURA */}
-        {/* ========================================== */}
         <div className="w-full max-w-xl mx-auto mb-14 z-20">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col items-center backdrop-blur-xl shadow-lg">
             <h4 className="text-lg font-bold text-white mb-2 text-center">Notificaciones de Lanzamiento</h4>
@@ -452,9 +419,7 @@ export default function OleumsPage() {
           </div>
         </div>
 
-        {/* ========================================== */}
-        {/* FOOTER Y ENLACES LEGALES */}
-        {/* ========================================== */}
+        {/* FOOTER */}
         <footer className="w-full flex flex-col items-center gap-5 py-8 mt-auto z-20 border-t border-white/10">
           <div className="flex flex-wrap justify-center items-center gap-6 text-xs text-gray-400 font-sans">
             <button
@@ -493,9 +458,7 @@ export default function OleumsPage() {
 
       </div>
 
-      {/* ========================================== */}
-      {/* MODAL DE TÉRMINOS Y CONDICIONES */}
-      {/* ========================================== */}
+      {/* MODAL DE POLÍTICAS Y TÉRMINOS */}
       {showLegalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-gray-950 border border-white/20 rounded-2xl max-w-2xl w-full p-6 md:p-8 max-h-[85vh] overflow-y-auto text-left shadow-2xl">
