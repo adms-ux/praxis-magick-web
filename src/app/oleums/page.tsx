@@ -63,7 +63,7 @@ const OLEUMS_DATA = [
     id: "king", 
     name: "King's Vault", 
     spirit: "Clauneck", 
-    category: "OLEOUM DE PROSPERIDAD", s
+    category: "OLEOUM DE PROSPERIDAD", 
     color: "#eab308",
     bg: "/bg-king.png", 
     bgMobile: "/bg-king-mobile.png", 
