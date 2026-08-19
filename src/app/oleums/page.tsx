@@ -4,11 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 // ==========================================
-// 1. BASE DE DATOS Y TEXTOS ACTUALIZADOS
+// 1. BASE DE DATOS Y TEXTOS
 // ==========================================
 const DEFINICION_OLEOUMS = "Los Oleoums Medievales de Praxis Magick son aceites esenciales intencionados para bendecir o imbuir cualquier objeto ungido con la esencia de la fuerza daemónica o el propósito para el cual fue creado. Se utilizan para ungir objetos, velas o a uno mismo.";
 
-const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que habrá varios grimorios digitales exclusivos. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida, desde el éxito material hasta el crecimiento personal. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
+const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que obtendrás de regalo un grimorio digital exclusivo. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida, desde el éxito material hasta el crecimiento personal. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
 
 const OLEUMS_DATA = [
   { 
@@ -57,7 +57,7 @@ const OLEUMS_DATA = [
     bgMobile: "/bg-witch-mobile.png", 
     image: "/frasco-witch.png", 
     titleImage: "/title-witch.png",
-    legend: "En la Europa antigua, quienes practicaban la magia dominaban el arte del glamour tejían redes de fascinación irresistibles. Su presencia era un hechizo magnético. Frimost despierta esa atracción seductora y carnal, una fuerza que puede ser invocada por cualquier persona para cautivar, sin importar su género u orientación sexual."
+    legend: "En la Europa antigua, quienes dominaban el arte del glamour tejían redes de fascinación irresistibles. Su presencia era un hechizo magnético. Frimost despierta esa atracción seductora y carnal, una fuerza que puede ser invocada por cualquier persona para cautivar, sin importar su género u orientación sexual."
   },
   { 
     id: "king", 
@@ -90,6 +90,7 @@ export default function OleumsPage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
+  const [fade, setFade] = useState(false);
 
   // Swipe táctil en móvil
   const [touchStartX, setTouchStartX] = useState(0);
@@ -99,8 +100,22 @@ export default function OleumsPage() {
 
   const current = OLEUMS_DATA[idx];
 
+  // Precarga inmediata de recursos
+  useEffect(() => {
+    OLEUMS_DATA.forEach((item) => {
+      [item.bg, item.bgMobile, item.image, item.titleImage].forEach((src) => {
+        const img = new window.Image();
+        img.src = src;
+      });
+    });
+  }, []);
+
   const changeOleum = (newIdx: number) => {
-    setIdx(newIdx);
+    setFade(true);
+    setTimeout(() => {
+      setIdx(newIdx);
+      setFade(false);
+    }, 280);
   };
 
   const nextOleum = () => changeOleum(idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
@@ -122,15 +137,10 @@ export default function OleumsPage() {
     const distanceX = touchStartX - touchEndX;
     const distanceY = touchStartY - touchEndY;
 
-    if (Math.abs(distanceY) > Math.abs(distanceX)) {
-      return;
-    }
+    if (Math.abs(distanceY) > Math.abs(distanceX)) return;
 
-    if (distanceX > 60) {
-      nextOleum();
-    } else if (distanceX < -60) {
-      prevOleum();
-    }
+    if (distanceX > 50) nextOleum();
+    if (distanceX < -50) prevOleum();
   };
 
   const handleNotifySubmit = async (e: React.FormEvent) => {
@@ -173,66 +183,59 @@ export default function OleumsPage() {
           font-family: 'Cinzel', 'Times New Roman', Times, serif;
         }
 
-        /* Animación de pulso continuo y suave en títulos */
-        @keyframes soft-pulse {
+        @keyframes pulse-title {
           0%, 100% { opacity: 0.85; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.02); }
         }
 
-        /* Ondulaciones de niebla orgánica verde */
-        @keyframes mist-flow-1 {
-          0% { transform: translate(-30%, -10%) scale(1) rotate(0deg); opacity: 0.35; }
-          50% { transform: translate(20%, 10%) scale(1.35) rotate(15deg); opacity: 0.7; }
-          100% { transform: translate(-30%, -10%) scale(1) rotate(0deg); opacity: 0.35; }
-        }
-
-        @keyframes mist-flow-2 {
-          0% { transform: translate(25%, 15%) scale(1.2) rotate(0deg); opacity: 0.4; }
-          50% { transform: translate(-25%, -15%) scale(1) rotate(-20deg); opacity: 0.75; }
-          100% { transform: translate(25%, 15%) scale(1.2) rotate(0deg); opacity: 0.4; }
+        @keyframes smoke-float {
+          0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.5; }
+          50% { transform: scale(1.15) translate(3%, -4%); opacity: 0.8; }
         }
 
         .anim-title-pulse {
-          animation: soft-pulse 4s ease-in-out infinite;
+          animation: pulse-title 4s ease-in-out infinite;
         }
 
-        .mist-blob-1 {
-          animation: mist-flow-1 12s ease-in-out infinite;
-          background: radial-gradient(circle, rgba(34, 197, 94, 0.45) 0%, rgba(16, 185, 129, 0.2) 45%, transparent 70%);
-        }
-
-        .mist-blob-2 {
-          animation: mist-flow-2 15s ease-in-out infinite;
-          background: radial-gradient(circle, rgba(74, 222, 128, 0.4) 0%, rgba(34, 197, 94, 0.15) 50%, transparent 75%);
+        .anim-smoke {
+          animation: smoke-float 8s ease-in-out infinite alternate;
         }
       `}</style>
 
       {/* ========================================== */}
-      {/* FONDO ANCLADO TOTAL SIN SALTO DE VIEWPORT */}
+      {/* FONDO ANCLADO ESTÁTICO (NO SALTA EN SCROLL) */}
       {/* ========================================== */}
-      <div className="fixed inset-0 w-full h-full z-0 pointer-events-none bg-black overflow-hidden transform-gpu">
-        {/* Móvil */}
-        <div className="relative w-full h-full md:hidden">
-          <Image
-            src={current.bgMobile}
-            alt="Fondo Oleum Móvil"
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover object-center opacity-40 transition-opacity duration-500"
-          />
-        </div>
-        {/* Monitor */}
-        <div className="relative w-full h-full hidden md:block">
-          <Image
-            src={current.bg}
-            alt="Fondo Oleum Monitor"
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover object-center opacity-40 transition-opacity duration-500"
-          />
-        </div>
+      <div 
+        className="fixed top-0 left-0 w-screen h-screen z-0 pointer-events-none bg-black"
+        style={{ position: "fixed", width: "100vw", height: "100vh" }}
+      >
+        {OLEUMS_DATA.map((item, index) => (
+          <div
+            key={item.id}
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              index === idx ? "opacity-40" : "opacity-0"
+            }`}
+          >
+            <div className="relative w-full h-full md:hidden">
+              <Image
+                src={item.bgMobile}
+                alt=""
+                fill
+                priority={index === 0}
+                className="object-cover object-center"
+              />
+            </div>
+            <div className="relative w-full h-full hidden md:block">
+              <Image
+                src={item.bg}
+                alt=""
+                fill
+                priority={index === 0}
+                className="object-cover object-center"
+              />
+            </div>
+          </div>
+        ))}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_90%)]" />
       </div>
 
@@ -248,25 +251,42 @@ export default function OleumsPage() {
             « Volver al inicio
           </Link>
 
-          {/* Logo con resplandor circular */}
-          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-purple-500/40 bg-black/60 backdrop-blur-md flex items-center justify-center p-1.5 shadow-[0_0_25px_rgba(168,85,247,0.5)]">
-            <Image
-              src="/logo.png"
-              alt="Praxis Magick Logo"
-              width={60}
-              height={60}
-              className="object-contain w-full h-full"
-              priority
+          {/* Logo con halo radial sin bordes duros */}
+          <div className="relative flex items-center justify-center">
+            <div 
+              className="absolute -inset-2 rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle, rgba(168,85,247,0.4) 0%, transparent 70%)" }}
             />
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-purple-500/40 bg-black/60 backdrop-blur-md flex items-center justify-center p-1.5 shadow-[0_0_20px_rgba(168,85,247,0.4)] relative z-10">
+              <Image
+                src="/logo.png"
+                alt="Praxis Magick Logo"
+                width={60}
+                height={60}
+                className="object-contain w-full h-full"
+                priority
+              />
+            </div>
           </div>
         </header>
 
-        {/* TÍTULO PRINCIPAL CON NIEBLA VERDE ORGÁNICA */}
-        <div className="relative w-full max-w-2xl flex justify-center items-center mb-6 py-6 min-h-[100px]">
-          {/* Niebla densa sin bordes de recorte */}
+        {/* TÍTULO PRINCIPAL CON HUMO VERDE RADIAL (SIN BORDES CUADRADOS) */}
+        <div className="relative w-full max-w-2xl flex justify-center items-center mb-6 py-4">
+          {/* Capas de humo compuestas 100% por gradientes radiales esféricos */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10">
-            <div className="mist-blob-1 absolute w-[300px] h-[160px] md:w-[460px] md:h-[200px] rounded-full blur-2xl" />
-            <div className="mist-blob-2 absolute w-[260px] h-[140px] md:w-[400px] md:h-[180px] rounded-full blur-xl" />
+            <div 
+              className="anim-smoke absolute w-[380px] md:w-[550px] h-[160px] md:h-[220px]"
+              style={{
+                background: "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(34,197,94,0.38) 0%, rgba(16,185,129,0.18) 45%, transparent 75%)"
+              }}
+            />
+            <div 
+              className="anim-smoke absolute w-[300px] md:w-[420px] h-[120px] md:h-[180px]"
+              style={{
+                animationDelay: "-3s",
+                background: "radial-gradient(ellipse 55% 45% at 50% 50%, rgba(74,222,128,0.3) 0%, rgba(34,197,94,0.12) 50%, transparent 75%)"
+              }}
+            />
           </div>
 
           <div className="relative w-full max-w-[340px] md:max-w-[440px] h-16 md:h-20">
@@ -289,7 +309,7 @@ export default function OleumsPage() {
         </div>
 
         {/* ========================================== */}
-        {/* CARRUSEL OPTIMIZADO */}
+        {/* CARRUSEL INMERSIVO */}
         {/* ========================================== */}
         <div
           className="flex flex-col items-center justify-center w-full relative mb-10"
@@ -315,24 +335,26 @@ export default function OleumsPage() {
             </button>
           </div>
 
-          {/* CONTENEDOR DEL PRODUCTO */}
-          <div className="flex flex-col items-center justify-center w-full">
-            
-            {/* Frasco con halo orgánico */}
+          {/* CONTENEDOR DEL PRODUCTO CON TRANSICIÓN DE OPACIDAD Y HOVER INTERACTIVO */}
+          <div 
+            className={`flex flex-col items-center justify-center w-full transition-all duration-300 ease-out ${
+              fade ? "opacity-0 scale-95" : "opacity-100 scale-100"
+            }`}
+          >
+            {/* Frasco con iluminación circular pura */}
             <div className="relative w-48 h-72 md:w-64 md:h-96 flex items-center justify-center mb-6">
               <div
-                className="absolute w-56 h-56 md:w-72 md:h-72 rounded-full blur-2xl -z-10 pointer-events-none transition-colors duration-500"
+                className="absolute inset-0 scale-150 pointer-events-none transition-all duration-700"
                 style={{
-                  background: `radial-gradient(circle, ${current.color}66 0%, transparent 70%)`,
+                  background: `radial-gradient(circle at 50% 50%, ${current.color}44 0%, transparent 65%)`,
                 }}
               />
               <Image
-                key={`img-${current.id}`}
                 src={current.image}
                 alt={current.name}
                 fill
                 sizes="(max-width: 768px) 192px, 256px"
-                className="object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.9)]"
+                className="object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.9)] transition-transform duration-500 hover:scale-110 cursor-pointer"
                 priority
               />
             </div>
@@ -340,13 +362,12 @@ export default function OleumsPage() {
             {/* Título del Oleum */}
             <div className="w-full max-w-[290px] md:max-w-[340px] h-20 md:h-28 relative flex justify-center items-center mb-6 anim-title-pulse">
               <div
-                className="absolute inset-0 blur-xl rounded-full -z-10 pointer-events-none transition-colors duration-500"
+                className="absolute inset-0 scale-125 pointer-events-none transition-all duration-700"
                 style={{
-                  background: `radial-gradient(circle, ${current.color}55 0%, transparent 75%)`,
+                  background: `radial-gradient(ellipse at 50% 50%, ${current.color}35 0%, transparent 70%)`,
                 }}
               />
               <Image
-                key={`title-${current.id}`}
                 src={current.titleImage}
                 alt={current.name}
                 fill
@@ -359,7 +380,7 @@ export default function OleumsPage() {
             {/* Categoría y Espíritu */}
             <div className="flex flex-col items-center gap-2 mb-4">
               <span
-                className="font-medieval-title text-base md:text-lg tracking-widest uppercase border-b border-white/20 pb-1 text-center transition-colors duration-300"
+                className="font-medieval-title text-base md:text-lg tracking-widest uppercase border-b border-white/20 pb-1 text-center"
                 style={{ color: current.color }}
               >
                 {current.category}
@@ -374,7 +395,11 @@ export default function OleumsPage() {
         </div>
 
         {/* LEYENDA Y TEASER */}
-        <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-14">
+        <div 
+          className={`w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-14 transition-opacity duration-300 ${
+            fade ? "opacity-0" : "opacity-100"
+          }`}
+        >
           <div className="bg-black/70 border border-white/10 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-[0_0_35px_rgba(0,0,0,0.7)]">
             <blockquote className="text-lg md:text-xl font-celtic-clean text-gray-200 leading-relaxed mb-8 tracking-wide">
               "{current.legend}"
@@ -458,7 +483,7 @@ export default function OleumsPage() {
 
       </div>
 
-      {/* MODAL DE POLÍTICAS Y TÉRMINOS */}
+      {/* MODAL */}
       {showLegalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-gray-950 border border-white/20 rounded-2xl max-w-2xl w-full p-6 md:p-8 max-h-[85vh] overflow-y-auto text-left shadow-2xl">
