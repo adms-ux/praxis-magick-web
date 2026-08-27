@@ -55,7 +55,7 @@ export default function Home() {
   useEffect(() => {
     const bannerInterval = setInterval(() => {
       setCurrentBannerIdx((prev) => (prev + 1) % BANNERS.length);
-    }, 4000); // Cambia de imagen cada 4 segundos
+    }, 4000); 
     return () => clearInterval(bannerInterval);
   }, []);
 
@@ -513,10 +513,11 @@ export default function Home() {
             <span className="font-sans font-bold tracking-wider text-gray-300">MASTERCARD</span>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6 text-gray-400">
+          <div className="flex flex-col items-center justify-center gap-3 text-gray-400">
             <button onClick={() => setShowLegalModal(true)} className="hover:text-green-400 transition-colors underline cursor-pointer">
               Términos, Condiciones y Políticas de Privacidad
             </button>
+            <span className="text-sm mt-2">Soporte: <strong>lamagick99@gmail.com</strong></span>
           </div>
 
           <a 
@@ -711,6 +712,10 @@ export default function Home() {
               <section>
                 <h4 className="font-bold text-green-300 text-md mb-2">2. Compras, entrega y preventa</h4>
                 <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente. Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF en el idioma elegido y los accesos a tu cuenta de usuario.</p>
+              </section>
+              <section>
+                <h4 className="font-bold text-green-300 text-md mb-2">3. Contacto y Soporte</h4>
+                <p>Para cualquier consulta, asistencia con tu orden o soporte técnico, puedes comunicarte con nosotros al correo oficial de Praxis Magick: <strong>lamagick99@gmail.com</strong>.</p>
               </section>
             </div>
             <div className="mt-8 text-center">

@@ -8,7 +8,7 @@ import Link from "next/link";
 // ==========================================
 const DEFINICION_OLEOUMS = "Los Oleoums Medievales de Praxis Magick son aceites esenciales intencionados para bendecir o imbuir cualquier objeto ungido con la esencia de la fuerza daemónica o el propósito para el cual fue creado. Se utilizan para ungir objetos, velas o a uno mismo.";
 
-const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que obtendrás de regalo un grimorio digital exclusivo. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida, desde el éxito material hasta el crecimiento personal. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
+const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que obtendrás de regalo un grimorio digital exclusivo y demás grimorios que puedes desbloquear. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
 
 const OLEUMS_DATA = [
   { 
@@ -90,6 +90,7 @@ export default function OleumsPage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false); // Nuevo estado para los términos
   const [fade, setFade] = useState(false);
 
   // Swipe táctil en móvil
@@ -145,7 +146,7 @@ export default function OleumsPage() {
 
   const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !termsAccepted) return;
     setIsSubmitting(true);
     try {
       const webhookUrl = "URL_DE_TU_WEBHOOK_MAKE_AQUI"; 
@@ -160,6 +161,7 @@ export default function OleumsPage() {
       }
       alert(`¡Registrado! Te avisaremos a ${email} en cuanto ${current.name} esté disponible.`);
       setEmail("");
+      setTermsAccepted(false); // Reiniciamos el checkbox
     } catch {
       alert("Hubo un error de conexión. Por favor, intenta de nuevo.");
     } finally {
@@ -413,7 +415,7 @@ export default function OleumsPage() {
           </div>
         </div>
 
-        {/* FORMULARIO DE CAPTURA */}
+        {/* FORMULARIO DE CAPTURA CON CHECKBOX */}
         <div className="w-full max-w-xl mx-auto mb-14 z-20">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col items-center backdrop-blur-xl shadow-lg">
             <h4 className="text-lg font-bold text-white mb-2 text-center">Notificaciones de Lanzamiento</h4>
@@ -421,25 +423,50 @@ export default function OleumsPage() {
               Ingresa tu correo electrónico para recibir un aviso en cuanto esta fórmula esté disponible en la tienda.
             </p>
 
-            <form onSubmit={handleNotifySubmit} className="flex flex-col sm:flex-row w-full gap-3">
-              <input
-                type="email"
-                required
-                placeholder="Tu correo electrónico..."
-                className="flex-grow bg-black/80 border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors"
-                style={{ outlineColor: current.color }}
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-                disabled={isSubmitting}
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting || !email}
-                className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 text-black cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: current.color, boxShadow: `0 0 15px ${current.color}50` }}
-              >
-                {isSubmitting ? "Enviando..." : "Avisarme"}
-              </button>
+            <form onSubmit={handleNotifySubmit} className="flex flex-col w-full gap-4">
+              <div className="flex flex-col sm:flex-row w-full gap-3">
+                <input
+                  type="email"
+                  required
+                  placeholder="Tu correo electrónico..."
+                  className="flex-grow bg-black/80 border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors"
+                  style={{ outlineColor: current.color }}
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                  disabled={isSubmitting}
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !email || !termsAccepted}
+                  className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 text-black cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: current.color, boxShadow: `0 0 15px ${current.color}50` }}
+                >
+                  {isSubmitting ? "Enviando..." : "Avisarme"}
+                </button>
+              </div>
+
+              {/* Casilla de aceptación de Términos */}
+              <div className="w-full text-left text-xs text-gray-400 mt-1">
+                <label className="flex items-start gap-3 cursor-pointer rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-0.5 accent-gray-500 w-4 h-4 rounded shrink-0 cursor-pointer"
+                  />
+                  <span className="leading-relaxed">
+                    He leído y acepto las{" "}
+                    <button
+                      type="button"
+                      onClick={() => setShowLegalModal(true)}
+                      className="text-gray-300 underline hover:text-white transition-colors"
+                    >
+                      Políticas de Privacidad y Términos
+                    </button>
+                    .
+                  </span>
+                </label>
+              </div>
             </form>
           </div>
         </div>
@@ -483,30 +510,39 @@ export default function OleumsPage() {
 
       </div>
 
-      {/* MODAL */}
+      {/* MODAL DE POLÍTICAS ACTUALIZADO (Con correo de soporte) */}
       {showLegalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-gray-950 border border-white/20 rounded-2xl max-w-2xl w-full p-6 md:p-8 max-h-[85vh] overflow-y-auto text-left shadow-2xl">
-            <h3 className="text-xl font-bold font-serif-classic text-purple-300 mb-4">
-              Términos, Condiciones y Aviso Legal
-            </h3>
-            <div className="space-y-4 text-xs md:text-sm text-gray-300 font-sans leading-relaxed">
-              <p>
-                <strong>Naturaleza del contenido:</strong> Los productos, fórmulas y materiales distribuidos por Praxis Magick son herramientas de práctica personal y desarrollo esotérico. No sustituyen asesoramiento médico, psicológico, financiero o legal profesional.
-              </p>
-              <p>
-                <strong>Privacidad de datos:</strong> Tu correo electrónico solo será utilizado para enviarte notificaciones exclusivas de disponibilidad, actualizaciones de productos y material complementario adquirido. No compartimos tus datos con terceros.
-              </p>
-              <p>
-                <strong>Envíos y disponibilidad:</strong> La fecha de entrega de las fórmulas ritualizadas estará sujeta a los tiempos de consagración y producción artesanal anunciados en cada preventa.
-              </p>
-            </div>
-            <button
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="relative w-full max-w-2xl max-h-[85vh] bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-300 overflow-y-auto">
+            <button 
               onClick={() => setShowLegalModal(false)}
-              className="mt-6 w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-bold text-sm transition-colors cursor-pointer"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer"
             >
-              Cerrar
+              ✕
             </button>
+            <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center">Términos, Condiciones y Políticas de Privacidad</h3>
+            <div className="space-y-6 text-sm leading-relaxed text-gray-300 pr-2">
+              <section>
+                <h4 className="font-bold text-green-300 text-md mb-2">1. Naturaleza del contenido</h4>
+                <p>Los productos que vendemos son conocimiento esotérico para adultos, ofrecido con fines educativos y de práctica personal. No constituyen asesoría médica, psicológica, financiera ni legal. Usas este contenido bajo tu propio riesgo. Debes ser mayor de 18 años para comprar en este sitio.</p>
+              </section>
+              <section>
+                <h4 className="font-bold text-green-300 text-md mb-2">2. Compras, entrega y preventa</h4>
+                <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente. Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF en el idioma elegido y los accesos a tu cuenta de usuario.</p>
+              </section>
+              <section>
+                <h4 className="font-bold text-green-300 text-md mb-2">3. Contacto y Soporte</h4>
+                <p>Para cualquier consulta, asistencia con tu orden o soporte técnico, puedes comunicarte con nosotros al correo oficial de Praxis Magick: <strong>lamagick99@gmail.com</strong>.</p>
+              </section>
+            </div>
+            <div className="mt-8 text-center">
+              <button 
+                onClick={() => setShowLegalModal(false)}
+                className="px-6 py-2.5 bg-purple-900/60 hover:bg-purple-800 text-white rounded-lg border border-purple-500/40 text-sm cursor-pointer"
+              >
+                Entendido / Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
