@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Cinzel_Decorative, MedievalSharp } from "next/font/google";
 import "./globals.css";
 
+// IMPORTAMOS NUESTROS ARCHIVOS GLOBALES
+import { LegalProvider } from "../context/LegalContext";
+import LegalGlobal from "../components/LegalGlobal";
+
 // Fuente Gótica/Elegante para títulos
 const cinzel = Cinzel_Decorative({ 
   weight: ['400', '700', '900'],
@@ -29,7 +33,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${cinzel.variable} ${medieval.variable} antialiased bg-black`}>
-        {children}
+        {/* ENVOLVEMOS TODO CON EL PROVEEDOR LEGAL */}
+        <LegalProvider>
+          {children}
+          {/* EL BANNER Y MODAL LEGAL ESTARÁN DISPONIBLES EN TODA LA WEB */}
+          <LegalGlobal />
+        </LegalProvider>
       </body>
     </html>
   );

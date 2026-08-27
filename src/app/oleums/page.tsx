@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+// IMPORTAMOS EL MEGÁFONO LEGAL:
+import { useLegal } from "../../context/LegalContext";
 
 // ==========================================
 // 1. BASE DE DATOS Y TEXTOS
@@ -86,11 +88,12 @@ const OLEUMS_DATA = [
 ];
 
 export default function OleumsPage() {
+  const { openLegalModal } = useLegal(); // INICIALIZAMOS EL MEGÁFONO
+  
   const [idx, setIdx] = useState(0);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showLegalModal, setShowLegalModal] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false); // Nuevo estado para los términos
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [fade, setFade] = useState(false);
 
   // Swipe táctil en móvil
@@ -458,7 +461,7 @@ export default function OleumsPage() {
                     He leído y acepto las{" "}
                     <button
                       type="button"
-                      onClick={() => setShowLegalModal(true)}
+                      onClick={() => openLegalModal("privacidad")}
                       className="text-gray-300 underline hover:text-white transition-colors"
                     >
                       Políticas de Privacidad y Términos
@@ -475,7 +478,7 @@ export default function OleumsPage() {
         <footer className="w-full flex flex-col items-center gap-5 py-8 mt-auto z-20 border-t border-white/10">
           <div className="flex flex-wrap justify-center items-center gap-6 text-xs text-gray-400 font-sans">
             <button
-              onClick={() => setShowLegalModal(true)}
+              onClick={() => openLegalModal("terminos")}
               className="hover:text-white transition-colors cursor-pointer underline underline-offset-4"
             >
               Políticas de Privacidad y Términos
@@ -509,43 +512,6 @@ export default function OleumsPage() {
         </footer>
 
       </div>
-
-      {/* MODAL DE POLÍTICAS ACTUALIZADO (Con correo de soporte) */}
-      {showLegalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="relative w-full max-w-2xl max-h-[85vh] bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-300 overflow-y-auto">
-            <button 
-              onClick={() => setShowLegalModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer"
-            >
-              ✕
-            </button>
-            <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center">Términos, Condiciones y Políticas de Privacidad</h3>
-            <div className="space-y-6 text-sm leading-relaxed text-gray-300 pr-2">
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">1. Naturaleza del contenido</h4>
-                <p>Los productos que vendemos son conocimiento esotérico para adultos, ofrecido con fines educativos y de práctica personal. No constituyen asesoría médica, psicológica, financiera ni legal. Usas este contenido bajo tu propio riesgo. Debes ser mayor de 18 años para comprar en este sitio.</p>
-              </section>
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">2. Compras, entrega y preventa</h4>
-                <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente. Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF en el idioma elegido y los accesos a tu cuenta de usuario.</p>
-              </section>
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">3. Contacto y Soporte</h4>
-                <p>Para cualquier consulta, asistencia con tu orden o soporte técnico, puedes comunicarte con nosotros al correo oficial de Praxis Magick: <strong>lamagick99@gmail.com</strong>.</p>
-              </section>
-            </div>
-            <div className="mt-8 text-center">
-              <button 
-                onClick={() => setShowLegalModal(false)}
-                className="px-6 py-2.5 bg-purple-900/60 hover:bg-purple-800 text-white rounded-lg border border-purple-500/40 text-sm cursor-pointer"
-              >
-                Entendido / Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

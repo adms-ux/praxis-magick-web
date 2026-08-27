@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+// IMPORTAMOS EL MEGÁFONO LEGAL:
+import { useLegal } from "../context/LegalContext";
 
 const BANNERS = [
   "/banner-leprechaun.png",
@@ -14,12 +16,13 @@ const BANNERS = [
 ];
 
 export default function Home() {
+  const { openLegalModal } = useLegal(); // INICIALIZAMOS EL MEGÁFONO
+
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
-  const [showLegalModal, setShowLegalModal] = useState(false);
   
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
@@ -28,7 +31,6 @@ export default function Home() {
   const [freeTrialEmail, setFreeTrialEmail] = useState("");
   const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
 
-  // Estado para el carrusel de Oleums
   const [currentBannerIdx, setCurrentBannerIdx] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -55,7 +57,7 @@ export default function Home() {
   useEffect(() => {
     const bannerInterval = setInterval(() => {
       setCurrentBannerIdx((prev) => (prev + 1) % BANNERS.length);
-    }, 4000); 
+    }, 4000);
     return () => clearInterval(bannerInterval);
   }, []);
 
@@ -383,15 +385,12 @@ export default function Home() {
           </button>
         </div>
 
-        {/* ========================================================================= */}
         {/* CARRUSEL DE BANNERS OLEUMS */}
-        {/* ========================================================================= */}
         <div className="w-full max-w-4xl my-24 relative flex flex-col items-center">
           <Link href="/oleums" className="w-full relative block group">
             
             <div className="w-full h-48 md:h-72 relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-[0_0_40px_rgba(168,85,247,0.2)] group-hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] transition-all duration-500 bg-black/60">
               
-              {/* Iteración de imágenes del carrusel */}
               {BANNERS.map((src, idx) => (
                 <Image 
                   key={src}
@@ -408,7 +407,6 @@ export default function Home() {
                 />
               ))}
               
-              {/* Gradiente oscuro para que el texto destaque */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end items-center pb-8 px-4 text-center">
                 <span className="text-[10px] md:text-xs tracking-[0.3em] font-medieval text-green-300 uppercase mb-2">Próximo Lanzamiento</span>
                 <h3 className="text-2xl md:text-4xl font-cinzel text-purple-200 drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] mb-5">
@@ -423,7 +421,6 @@ export default function Home() {
             </div>
           </Link>
         </div>
-        {/* ========================================================================= */}
 
         {/* INSTRUCCIONES DE COMPRA */}
         <div id="instrucciones" className="w-full max-w-3xl text-left border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md p-8 mb-20 shadow-xl">
@@ -504,6 +501,7 @@ export default function Home() {
 
       </div>
 
+      {/* FOOTER */}
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
           <div className="flex items-center gap-4 text-gray-400 text-sm">
@@ -513,11 +511,20 @@ export default function Home() {
             <span className="font-sans font-bold tracking-wider text-gray-300">MASTERCARD</span>
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-3 text-gray-400">
-            <button onClick={() => setShowLegalModal(true)} className="hover:text-green-400 transition-colors underline cursor-pointer">
-              Términos, Condiciones y Políticas de Privacidad
+          <div className="flex flex-wrap justify-center gap-6 text-gray-400">
+            <button 
+              onClick={() => openLegalModal("terminos")} 
+              className="hover:text-green-400 transition-colors underline cursor-pointer"
+            >
+              Términos y Condiciones
             </button>
-            <span className="text-sm mt-2">Soporte: <strong>lamagick99@gmail.com</strong></span>
+            <span className="text-gray-600">|</span>
+            <button 
+              onClick={() => openLegalModal("privacidad")} 
+              className="hover:text-purple-400 transition-colors underline cursor-pointer"
+            >
+              Aviso de Privacidad
+            </button>
           </div>
 
           <a 
@@ -538,7 +545,7 @@ export default function Home() {
 
       {/* MODAL CHECKOUT */}
       {showCheckoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(34,197,94,0.3)] font-medieval text-gray-200">
             <button 
               onClick={() => setShowCheckoutModal(false)}
@@ -606,11 +613,10 @@ export default function Home() {
                   className="mt-0.5 accent-green-500 w-4 h-4 rounded shrink-0 cursor-pointer" 
                 />
                 <span className="leading-relaxed">
-                  Soy mayor de 18 años y he leído y acepto los{" "}
-                  <button onClick={() => setShowLegalModal(true)} className="text-green-400 underline font-semibold">
-                    Términos, Condiciones y Políticas de Privacidad
-                  </button>{" "}
-                  (incluyendo entrega digital en preventa).
+                  He leído y acepto los{" "}
+                  <button onClick={() => openLegalModal("terminos")} className="text-green-400 underline font-semibold">Términos y Condiciones</button>{" "}
+                  y el{" "}
+                  <button onClick={() => openLegalModal("privacidad")} className="text-green-400 underline font-semibold">Aviso de Privacidad</button>.
                 </span>
               </label>
             </div>
@@ -631,7 +637,7 @@ export default function Home() {
 
       {/* MODAL PRUEBA GRATUITA */}
       {showFreeTrialModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-md bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-200">
             <button 
               onClick={() => setShowFreeTrialModal(false)}
@@ -682,6 +688,9 @@ export default function Home() {
                   className="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-sans"
                 />
               </div>
+              <div className="mb-4 text-[10px] text-gray-400 font-sans leading-tight">
+                Al solicitar este contenido, aceptas nuestro <button type="button" onClick={() => openLegalModal("privacidad")} className="text-purple-400 underline">Aviso de Privacidad</button> y aceptas recibir comunicaciones promocionales.
+              </div>
               <button
                 type="submit"
                 className="w-full py-3.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg font-medieval text-md transition-all duration-300 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.4)] cursor-pointer"
@@ -689,43 +698,6 @@ export default function Home() {
                 Obtener Muestra Gratis ({freeTrialLanguage === "es" ? "Español" : "English"})
               </button>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL LEGAL */}
-      {showLegalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="relative w-full max-w-2xl max-h-[85vh] bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-300 overflow-y-auto">
-            <button 
-              onClick={() => setShowLegalModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer"
-            >
-              ✕
-            </button>
-            <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center">Términos, Condiciones y Políticas de Privacidad</h3>
-            <div className="space-y-6 text-sm leading-relaxed text-gray-300 pr-2">
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">1. Naturaleza del contenido</h4>
-                <p>Los productos que vendemos son conocimiento esotérico para adultos, ofrecido con fines educativos y de práctica personal. No constituyen asesoría médica, psicológica, financiera ni legal. Usas este contenido bajo tu propio riesgo. Debes ser mayor de 18 años para comprar en este sitio.</p>
-              </section>
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">2. Compras, entrega y preventa</h4>
-                <p>Cuando un producto se vende en preventa, la fecha de entrega se indica claramente. Una vez confirmado tu pago, recibirás tu correo de confirmación. En la fecha de lanzamiento recibirás tu e-book en PDF en el idioma elegido y los accesos a tu cuenta de usuario.</p>
-              </section>
-              <section>
-                <h4 className="font-bold text-green-300 text-md mb-2">3. Contacto y Soporte</h4>
-                <p>Para cualquier consulta, asistencia con tu orden o soporte técnico, puedes comunicarte con nosotros al correo oficial de Praxis Magick: <strong>lamagick99@gmail.com</strong>.</p>
-              </section>
-            </div>
-            <div className="mt-8 text-center">
-              <button 
-                onClick={() => setShowLegalModal(false)}
-                className="px-6 py-2.5 bg-purple-900/60 hover:bg-purple-800 text-white rounded-lg border border-purple-500/40 text-sm cursor-pointer"
-              >
-                Entendido / Cerrar
-              </button>
-            </div>
           </div>
         </div>
       )}
