@@ -144,8 +144,8 @@ export default function LegalGlobal() {
               {activeLegalTab === "terminos" && (
                 <div className="space-y-6">
                   <h4 className="text-lg font-cinzel text-white mb-4">Términos y Condiciones de Uso y Venta</h4>
-                  <p className="text-xs text-gray-500">Última actualización: 26 de agosto de 2026</p>
-                  <p>Bienvenido/a. Los presentes Términos y Condiciones rigen el uso de este sitio web, la aplicación web asociada (en adelante, la "Plataforma") y la compra de productos digitales y físicos ofrecidos por Bryan Méndez Mota (en adelante, el "Titular"). Al crear una cuenta, realizar una compra o acceder a nuestros contenidos, el usuario acepta someterse íntegramente a las siguientes políticas.</p>
+                  <p className="text-xs text-gray-500">Última actualización: 28 de agosto de 2026</p>
+                  <p>Bienvenido/a. Los presentes Términos y Condiciones rigen el uso de este sitio web, la aplicación web asociada (en adelante, la "Plataforma") y la compra de productos digitales y físicos ofrecidos por <strong>Praxis Magick</strong> (en adelante, el "Titular"). Al crear una cuenta, realizar una compra o acceder a nuestros contenidos, el usuario acepta someterse íntegramente a las siguientes políticas.</p>
                   
                   <div>
                     <h5 className="font-bold text-purple-300 mb-2">1. Creación de Cuentas, Seguridad y Baja del Servicio</h5>
@@ -166,8 +166,12 @@ export default function LegalGlobal() {
                   </div>
 
                   <div>
-                    <h5 className="font-bold text-purple-300 mb-2">3. Preventas y Fechas de Liberación</h5>
-                    <p>Para los productos adquiridos en "Preventa", el acceso no es inmediato. La liberación oficial de <em>Demonios del Verum</em> se llevará a cabo el <strong>23 de septiembre de 2026</strong>. A partir de dicha fecha, los usuarios podrán acceder a su contenido a través de su biblioteca en la web.</p>
+                    <h5 className="font-bold text-purple-300 mb-2">3. Preventas, Fechas de Liberación y Envíos</h5>
+                    <p className="mb-2">Para los productos adquiridos en la modalidad de "Preventa", la entrega o acceso no es inmediato, sino que se realizará en la fecha de lanzamiento oficial indicada en la página de cada producto.</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Productos Digitales:</strong> La liberación oficial y el acceso al contenido se habilitará el día del lanzamiento. A partir de esa fecha, los usuarios podrán acceder a su material a través de su biblioteca en la Plataforma.</li>
+                      <li><strong>Productos Físicos:</strong> El día oficial de lanzamiento corresponde a la fecha en que el producto sale de nuestras instalaciones e inicia su proceso logístico de envío. La fecha de entrega final dependerá de los tiempos de la empresa de paquetería correspondiente.</li>
+                    </ul>
                   </div>
 
                   <div>
@@ -204,7 +208,7 @@ export default function LegalGlobal() {
               {activeLegalTab === "privacidad" && (
                 <div className="space-y-6">
                   <h4 className="text-lg font-cinzel text-white mb-4">Aviso de Privacidad Integral</h4>
-                  <p>Bryan Méndez Mota, con domicilio en el Estado de Tlaxcala, México, es el Responsable del uso y protección de sus datos personales.</p>
+                  <p><strong>Praxis Magick</strong>, con domicilio en el Estado de Tlaxcala, México, es el Responsable del uso y protección de sus datos personales.</p>
                   
                   <div>
                     <h5 className="font-bold text-purple-300 mb-2">Datos Recabados</h5>
