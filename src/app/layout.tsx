@@ -3,8 +3,8 @@ import { Cinzel_Decorative, MedievalSharp } from "next/font/google";
 import "./globals.css";
 
 // IMPORTAMOS NUESTROS ARCHIVOS GLOBALES
-import { LegalProvider } from "../context/LegalContext";
-import LegalGlobal from "../components/LegalGlobal";
+import { LegalProvider } from "./Context/LegalContext";
+import LegalGlobal from "./Components/LegalGlobal";
 
 // Fuente Gótica/Elegante para títulos
 const cinzel = Cinzel_Decorative({ 

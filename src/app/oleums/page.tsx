@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 // IMPORTAMOS EL MEGÁFONO LEGAL:
-import { useLegal } from "../../context/LegalContext";
+import { useLegal } from "../Context/LegalContext";
 
 // ==========================================
 // 1. BASE DE DATOS Y TEXTOS

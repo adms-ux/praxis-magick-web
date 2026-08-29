@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useLegal } from "../context/LegalContext";
+import { useLegal } from "../Context/LegalContext";
 
 export default function LegalGlobal() {
   const { showLegalModal, activeLegalTab, closeLegalModal, openLegalModal } = useLegal();
