@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 // IMPORTAMOS EL MEGÁFONO LEGAL:
-import { useLegal } from "./Context/LegalContext";
+import { useLegal } from "../context/LegalContext";
 
 const BANNERS = [
   "/banner-leprechaun.png",
@@ -30,6 +30,7 @@ export default function Home() {
 
   const [freeTrialEmail, setFreeTrialEmail] = useState("");
   const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
+  const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
 
   const [currentBannerIdx, setCurrentBannerIdx] = useState(0);
 
@@ -204,19 +205,49 @@ export default function Home() {
       alert("Por favor ingresa tu correo electrónico.");
       return;
     }
+    // AQUÍ COLOCAS TU LINK REAL DE STRIPE
     const stripeUrl = `https://buy.stripe.com/test_5kQaEYggb4hD0IUfVw1kA00?prefilled_email=${encodeURIComponent(
       checkoutEmail
     )}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
     window.location.href = stripeUrl;
   };
 
-  const handleSubmitFreeTrial = (e: React.FormEvent) => {
+  const handleSubmitFreeTrial = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (freeTrialEmail) {
-      const idiomaTexto = freeTrialLanguage === "es" ? "Español" : "English";
-      alert(`¡Gracias! Enviaremos la muestra gratuita en [${idiomaTexto}] a: ${freeTrialEmail}`);
+    if (!freeTrialEmail) return;
+    
+    setIsSubmittingTrial(true);
+    try {
+      // AQUÍ COLOCAS LA URL DE TU WEBHOOK (ej. Make.com o Zapier)
+      const webhookUrl = "URL_DE_TU_WEBHOOK_AQUI"; 
+      if (webhookUrl !== "URL_DE_TU_WEBHOOK_AQUI") {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            email: freeTrialEmail, 
+            type: "Free Trial", 
+            language: freeTrialLanguage 
+          }),
+        });
+      } else {
+        // Simulación visual si no hay webhook configurado
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
+
+      // RUTAS DE TUS PDF DE MUESTRA GRATIS (Asegúrate de subirlos a la carpeta "public" ej. /public/muestra-es.pdf)
+      const pdfUrl = freeTrialLanguage === "es" ? "/muestra-verum-es.pdf" : "/muestra-verum-en.pdf";
+      
+      // Abrimos el PDF en una nueva pestaña
+      window.open(pdfUrl, "_blank");
+
+      alert("¡Redirigiendo a tu muestra gratuita! También guardaremos tu correo para enviarte recordatorios y novedades.");
       setShowFreeTrialModal(false);
       setFreeTrialEmail("");
+    } catch (error) {
+      alert("Hubo un error de conexión, pero intentaremos abrir tu archivo.");
+    } finally {
+      setIsSubmittingTrial(false);
     }
   };
 
@@ -343,10 +374,10 @@ export default function Home() {
 
             <div className="p-5 border border-purple-800/40 rounded-xl bg-purple-950/20 backdrop-blur-sm mb-6">
               <h3 className="text-lg font-cinzel text-purple-300 mb-2 flex items-center gap-2">
-                <span>🎁</span> Regalo de preventa: Magia Olímpica
+                <span>🎟️</span> Bono especial de preventa
               </h3>
               <p className="text-sm text-gray-300 font-medieval leading-relaxed mb-3">
-                Por tiempo limitado, al adquirir <em>Demonios del Verum</em> en preventa recibes de regalo nuestro próximo ebook:
+                Por tiempo limitado, al adquirir <em>Demonios del Verum</em> en preventa recibirás un cupón de descuento exclusivo para adquirir nuestro próximo lanzamiento:
               </p>
               <p className="text-sm font-semibold text-green-300 font-medieval mb-2">
                 MAGIA OLÍMPICA — Aprende a Trabajar con los Espíritus Planetarios
@@ -355,7 +386,7 @@ export default function Home() {
                 Una guía introductoria al trabajo con las siete inteligencias planetarias clásicas, perfecta como complemento para expandir tu práctica más allá de la magia goética.
               </p>
               <p className="text-xs font-semibold text-purple-400 font-medieval">
-                📅 Este bono se entrega el día de su lanzamiento: 23 de octubre.
+                📅 El cupón se te enviará el día de su lanzamiento: 23 de octubre.
               </p>
             </div>
           </div>
@@ -428,20 +459,20 @@ export default function Home() {
           <div className="space-y-4 font-medieval text-gray-300">
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">1</span>
-              <p className="mt-1">Selecciona el idioma de tu preferencia (Español o Inglés) y realiza tu compra ingresando tu correo electrónico.</p>
+              <p className="mt-1">Selecciona el idioma de tu preferencia (Español o Inglés) y realiza tu compra procesada de forma segura a través de Stripe.</p>
             </div>
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">2</span>
-              <p className="mt-1">Recibirás un correo electrónico automático confirmando tu orden de preventa.</p>
+              <p className="mt-1">Inmediatamente después de tu pago, recibirás un correo electrónico automático con tu recibo, confirmando tu acceso a la preventa.</p>
             </div>
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-green-900/60 border border-green-500/40 flex items-center justify-center text-green-300 font-bold shrink-0">3</span>
-              <p className="mt-1">El <strong>23 de septiembre</strong> te enviaremos el e-book <em>Demonios del Verum</em> en la versión elegida directo a tu correo electrónico.</p>
+              <p className="mt-1">El día oficial del lanzamiento (<strong>23 de septiembre</strong>), te enviaremos por correo electrónico los datos de acceso y la contraseña de tu cuenta de usuario.</p>
             </div>
             <div className="flex items-start gap-4">
               <span className="w-8 h-8 rounded-full bg-purple-900/60 border border-purple-500/40 flex items-center justify-center text-purple-300 font-bold shrink-0">4</span>
               <p className="mt-1">
-                Junto con tu e-book el 23 de septiembre, <strong>recibirás los datos de acceso a tu cuenta de usuario</strong> para descargar y respaldar tu material (y <em>Magia Olímpica</em> a partir del 23 de octubre).
+                Con tu cuenta, podrás ingresar a nuestra aplicación web para leer <em>Demonios del Verum</em> directamente en tu biblioteca virtual. Para proteger los derechos de autor el material no será descargable, pero tendrás acceso a enlaces directos exclusivos para descargar e imprimir los sellos rituales.
               </p>
             </div>
           </div>
@@ -462,7 +493,7 @@ export default function Home() {
               </button>
               {openFaq === 1 && (
                 <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                  Contamos con edición en Español e Inglés. Puedes seleccionar la versión deseada al momento de confirmar tu preventa o prueba gratuita.
+                  Contamos con edición en Español e Inglés. Puedes seleccionar la versión deseada al momento de confirmar tu preventa o solicitar la prueba gratuita.
                 </div>
               )}
             </div>
@@ -477,7 +508,7 @@ export default function Home() {
               </button>
               {openFaq === 2 && (
                 <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                  Se enviará a tu correo electrónico en formato PDF. Además, el mismo 23 de septiembre se te enviará la contraseña de tu cuenta para almacenarlo y descargarlo desde tu biblioteca en nuestra página web. Próximamente estará habilitada la lectura en línea.
+                  Por motivos de seguridad y para proteger los derechos de autor, el e-book <strong>no se envía en PDF ni es descargable</strong>. A partir del 23 de septiembre recibirás tus credenciales para leer el material de forma cómoda en tu biblioteca dentro de nuestra aplicación web. Sin embargo, dentro del libro encontrarás enlaces exclusivos para descargar e imprimir los diagramas y sellos necesarios para tu práctica.
                 </div>
               )}
             </div>
@@ -487,12 +518,12 @@ export default function Home() {
                 onClick={() => toggleFaq(3)}
                 className="w-full p-5 text-left flex justify-between items-center text-gray-200 hover:text-green-300 transition-colors font-semibold cursor-pointer"
               >
-                <span>¿Puedo compartir mi copia?</span>
+                <span>¿Puedo compartir mi acceso a la plataforma?</span>
                 <span className="text-xl text-purple-400">{openFaq === 3 ? "−" : "+"}</span>
               </button>
               {openFaq === 3 && (
                 <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                  No. Es una obra de distribución exclusiva y de uso personal e intransferible, protegida por derechos de autor.
+                  No. Es una obra de distribución exclusiva y tu cuenta de usuario es de uso estrictamente personal e intransferible. Compartir tus credenciales resultará en la terminación de tu cuenta sin derecho a reembolso.
                 </div>
               )}
             </div>
@@ -563,7 +594,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-xs text-purple-300 border-t border-white/10 pt-2 mt-2">
-                🎁 Incluye gratis: e-book <strong>Magia Olímpica</strong> (23 Oct).
+                🎟️ Incluye: Cupón de descuento para <strong>Magia Olímpica</strong> (23 Oct).
               </p>
             </div>
             <div className="mb-4">
@@ -647,7 +678,7 @@ export default function Home() {
             </button>
             <h3 className="text-2xl font-cinzel text-purple-300 mb-2 text-center">Prueba Gratuita</h3>
             <p className="text-xs text-gray-300 text-center mb-5 leading-relaxed">
-              Selecciona tu idioma e ingresa tu correo para recibir la muestra gratuita de <strong>Demonios del Verum</strong>.
+              Selecciona tu idioma e ingresa tu correo. Al hacerlo, abriremos automáticamente la muestra gratuita de <strong>Demonios del Verum</strong> en una nueva pestaña.
             </p>
             <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
               <div>
@@ -685,6 +716,7 @@ export default function Home() {
                   placeholder="tu@email.com" 
                   value={freeTrialEmail}
                   onChange={(e) => setFreeTrialEmail(e.target.value)}
+                  disabled={isSubmittingTrial}
                   className="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-sans"
                 />
               </div>
@@ -693,9 +725,10 @@ export default function Home() {
               </div>
               <button
                 type="submit"
-                className="w-full py-3.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg font-medieval text-md transition-all duration-300 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.4)] cursor-pointer"
+                disabled={isSubmittingTrial || !freeTrialEmail}
+                className="w-full py-3.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg font-medieval text-md transition-all duration-300 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.4)] cursor-pointer disabled:opacity-50"
               >
-                Obtener Muestra Gratis ({freeTrialLanguage === "es" ? "Español" : "English"})
+                {isSubmittingTrial ? "Procesando..." : `Ver Muestra Gratis (${freeTrialLanguage === "es" ? "Español" : "English"})`}
               </button>
             </form>
           </div>
