@@ -152,16 +152,20 @@ export default function OleumsPage() {
     if (!email || !termsAccepted) return;
     setIsSubmitting(true);
     try {
-      const webhookUrl = "URL_DE_TU_WEBHOOK_MAKE_AQUI"; 
-      if (webhookUrl !== "URL_DE_TU_WEBHOOK_MAKE_AQUI") {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email, oleum_interes: current.name }),
-        });
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 800));
-      }
+      // WEBHOOK DE MAKE.COM INTEGRADO:
+      const webhookUrl = "https://hook.us2.make.com/p61xcewo1ax4ygmbcn6h65rtw0vkcds4"; 
+      
+      await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          event_type: "oleum_lead",
+          email: email, 
+          oleum_interes: current.name,
+          timestamp: new Date().toISOString()
+        }),
+      });
+
       alert(`¡Registrado! Te avisaremos a ${email} en cuanto ${current.name} esté disponible.`);
       setEmail("");
       setTermsAccepted(false); // Reiniciamos el checkbox

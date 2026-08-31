@@ -205,8 +205,8 @@ export default function Home() {
       alert("Por favor ingresa tu correo electrónico.");
       return;
     }
-    // AQUÍ COLOCAS TU LINK REAL DE STRIPE
-    const stripeUrl = `https://buy.stripe.com/test_5kQaEYggb4hD0IUfVw1kA00?prefilled_email=${encodeURIComponent(
+    // LINK OFICIAL DE STRIPE INTEGRADO:
+    const stripeUrl = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(
       checkoutEmail
     )}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
     window.location.href = stripeUrl;
@@ -218,27 +218,21 @@ export default function Home() {
     
     setIsSubmittingTrial(true);
     try {
-      // AQUÍ COLOCAS LA URL DE TU WEBHOOK (ej. Make.com o Zapier)
-      const webhookUrl = "URL_DE_TU_WEBHOOK_AQUI"; 
-      if (webhookUrl !== "URL_DE_TU_WEBHOOK_AQUI") {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            email: freeTrialEmail, 
-            type: "Free Trial", 
-            language: freeTrialLanguage 
-          }),
-        });
-      } else {
-        // Simulación visual si no hay webhook configurado
-        await new Promise((resolve) => setTimeout(resolve, 800));
-      }
-
-      // RUTAS DE TUS PDF DE MUESTRA GRATIS (Asegúrate de subirlos a la carpeta "public" ej. /public/muestra-es.pdf)
-      const pdfUrl = freeTrialLanguage === "es" ? "/muestra-verum-es.pdf" : "/muestra-verum-en.pdf";
+      // WEBHOOK DE MAKE.COM INTEGRADO:
+      const webhookUrl = "https://hook.us2.make.com/p61xcewo1ax4ygmbcn6h65rtw0vkcds4"; 
       
-      // Abrimos el PDF en una nueva pestaña
+      await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          event_type: "free_trial",
+          email: freeTrialEmail, 
+          language: freeTrialLanguage,
+          timestamp: new Date().toISOString()
+        }),
+      });
+
+      const pdfUrl = freeTrialLanguage === "es" ? "/muestra-verum-es.pdf" : "/muestra-verum-en.pdf";
       window.open(pdfUrl, "_blank");
 
       alert("¡Redirigiendo a tu muestra gratuita! También guardaremos tu correo para enviarte recordatorios y novedades.");
