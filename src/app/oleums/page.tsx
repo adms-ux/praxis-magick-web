@@ -9,7 +9,6 @@ import { useLegal } from "../Context/LegalContext";
 // 1. BASE DE DATOS Y TEXTOS
 // ==========================================
 const DEFINICION_OLEOUMS = "Los Oleoums Medievales de Praxis Magick son aceites esenciales intencionados para bendecir o imbuir cualquier objeto ungido con la esencia de la fuerza daemónica o el propósito para el cual fue creado. Se utilizan para ungir objetos, velas o a uno mismo.";
-
 const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que obtendrás de regalo un grimorio digital exclusivo y demás grimorios que puedes desbloquear. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
 
 const OLEUMS_DATA = [
@@ -89,19 +88,17 @@ const OLEUMS_DATA = [
 
 export default function OleumsPage() {
   const { openLegalModal } = useLegal(); // INICIALIZAMOS EL MEGÁFONO
-  
   const [idx, setIdx] = useState(0);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [fade, setFade] = useState(false);
-
   // Swipe táctil en móvil
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartY, setTouchStartY] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
   const [touchEndY, setTouchEndY] = useState(0);
-
+  
   const current = OLEUMS_DATA[idx];
 
   // Precarga inmediata de recursos
@@ -121,41 +118,37 @@ export default function OleumsPage() {
       setFade(false);
     }, 280);
   };
-
+  
   const nextOleum = () => changeOleum(idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
   const prevOleum = () => changeOleum(idx === 0 ? OLEUMS_DATA.length - 1 : idx - 1);
-
+  
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.targetTouches[0].clientX);
     setTouchStartY(e.targetTouches[0].clientY);
     setTouchEndX(e.targetTouches[0].clientX);
     setTouchEndY(e.targetTouches[0].clientY);
   };
-
+  
   const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEndX(e.targetTouches[0].clientX);
     setTouchEndY(e.targetTouches[0].clientY);
   };
-
+  
   const handleTouchEnd = () => {
     const distanceX = touchStartX - touchEndX;
     const distanceY = touchStartY - touchEndY;
-
     if (Math.abs(distanceY) > Math.abs(distanceX)) return;
-
     if (distanceX > 50) nextOleum();
     if (distanceX < -50) prevOleum();
   };
-
+  
   const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !termsAccepted) return;
     setIsSubmitting(true);
     try {
-      // WEBHOOK DE MAKE.COM INTEGRADO:
-      const webhookUrl = "https://hook.us2.make.com/p61xcewo1ax4ygmbcn6h65rtw0vkcds4"; 
-      
-      await fetch(webhookUrl, {
+      // WEBHOOK SEGURO EN EL SERVIDOR:
+      await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -165,7 +158,6 @@ export default function OleumsPage() {
           timestamp: new Date().toISOString()
         }),
       });
-
       alert(`¡Registrado! Te avisaremos a ${email} en cuanto ${current.name} esté disponible.`);
       setEmail("");
       setTermsAccepted(false); // Reiniciamos el checkbox
@@ -178,10 +170,8 @@ export default function OleumsPage() {
 
   return (
     <main className="min-h-screen bg-black text-gray-200 flex flex-col items-center overflow-x-hidden relative font-sans selection:bg-purple-950 selection:text-green-300">
-      
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=MedievalSharp&family=Cinzel:wght@600;700&display=swap');
-
         .font-celtic-clean {
           font-family: 'MedievalSharp', cursive, serif;
         }
@@ -191,21 +181,17 @@ export default function OleumsPage() {
         .font-serif-classic {
           font-family: 'Cinzel', 'Times New Roman', Times, serif;
         }
-
         @keyframes pulse-title {
           0%, 100% { opacity: 0.85; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.02); }
         }
-
         @keyframes smoke-float {
           0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.5; }
           50% { transform: scale(1.15) translate(3%, -4%); opacity: 0.8; }
         }
-
         .anim-title-pulse {
           animation: pulse-title 4s ease-in-out infinite;
         }
-
         .anim-smoke {
           animation: smoke-float 8s ease-in-out infinite alternate;
         }
@@ -250,7 +236,6 @@ export default function OleumsPage() {
 
       {/* CONTENIDO PRINCIPAL */}
       <div className="relative z-10 w-full max-w-5xl flex flex-col min-h-screen px-6 py-6 items-center">
-
         {/* HEADER */}
         <header className="w-full flex items-center justify-between mb-8">
           <Link
@@ -259,7 +244,6 @@ export default function OleumsPage() {
           >
             « Volver al inicio
           </Link>
-
           {/* Logo con halo radial sin bordes duros */}
           <div className="relative flex items-center justify-center">
             <div 
@@ -297,7 +281,6 @@ export default function OleumsPage() {
               }}
             />
           </div>
-
           <div className="relative w-full max-w-[340px] md:max-w-[440px] h-16 md:h-20">
             <Image
               src="/oleums-main.png"
@@ -394,7 +377,6 @@ export default function OleumsPage() {
               >
                 {current.category}
               </span>
-
               <span className="font-serif-classic text-sm md:text-base text-gray-300 bg-black/60 px-5 py-1.5 rounded-full border border-white/10 backdrop-blur-md shadow-md tracking-wider">
                 Espíritu Ritualizado:{" "}
                 <span className="font-bold text-white tracking-widest">{current.spirit}</span>
@@ -413,9 +395,7 @@ export default function OleumsPage() {
             <blockquote className="text-lg md:text-xl font-celtic-clean text-gray-200 leading-relaxed mb-8 tracking-wide">
               "{current.legend}"
             </blockquote>
-
             <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8" />
-
             <p className="text-sm font-sans text-gray-400 leading-relaxed px-2 text-justify md:text-center">
               {TEASER_TEXT}
             </p>
@@ -429,7 +409,6 @@ export default function OleumsPage() {
             <p className="text-sm text-gray-400 mb-6 text-center font-sans">
               Ingresa tu correo electrónico para recibir un aviso en cuanto esta fórmula esté disponible en la tienda.
             </p>
-
             <form onSubmit={handleNotifySubmit} className="flex flex-col w-full gap-4">
               <div className="flex flex-col sm:flex-row w-full gap-3">
                 <input
@@ -451,7 +430,7 @@ export default function OleumsPage() {
                   {isSubmitting ? "Enviando..." : "Avisarme"}
                 </button>
               </div>
-
+              
               {/* Casilla de aceptación de Términos */}
               <div className="w-full text-left text-xs text-gray-400 mt-1">
                 <label className="flex items-start gap-3 cursor-pointer rounded-lg">
@@ -514,7 +493,6 @@ export default function OleumsPage() {
             <span className="font-sans text-xs tracking-widest uppercase">Síguenos en Instagram</span>
           </a>
         </footer>
-
       </div>
     </main>
   );

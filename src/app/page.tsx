@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,31 +16,28 @@ const BANNERS = [
 
 export default function Home() {
   const { openLegalModal } = useLegal(); // INICIALIZAMOS EL MEGÁFONO
-
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
-  
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
-
   const [freeTrialEmail, setFreeTrialEmail] = useState("");
   const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
   const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
-
   const [currentBannerIdx, setCurrentBannerIdx] = useState(0);
-
+  
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Contador de la preventa
   useEffect(() => {
     const targetDate = new Date(2026, 8, 23, 23, 59, 59).getTime();
+
     const interval = setInterval(() => {
       const now = new Date().getTime();
       const difference = targetDate - now;
+
       if (difference > 0) {
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
@@ -51,6 +47,7 @@ export default function Home() {
         });
       } else clearInterval(interval);
     }, 1000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -78,7 +75,6 @@ export default function Home() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     };
-
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
@@ -118,7 +114,6 @@ export default function Home() {
           )
         );
       }
-
       return { branches, alpha: 1, path };
     };
 
@@ -209,19 +204,18 @@ export default function Home() {
     const stripeUrl = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(
       checkoutEmail
     )}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
+    
     window.location.href = stripeUrl;
   };
 
   const handleSubmitFreeTrial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!freeTrialEmail) return;
-    
     setIsSubmittingTrial(true);
+
     try {
-      // WEBHOOK DE MAKE.COM INTEGRADO:
-      const webhookUrl = "https://hook.us2.make.com/p61xcewo1ax4ygmbcn6h65rtw0vkcds4"; 
-      
-      await fetch(webhookUrl, {
+      // WEBHOOK SEGURO EN EL SERVIDOR:
+      await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -247,7 +241,6 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen bg-black overflow-x-hidden flex flex-col items-center text-white selection:bg-purple-900 selection:text-green-300">
-      
       <style>{`
         @keyframes float-particle {
           0% { transform: translateY(0) scale(1); opacity: 0; }
@@ -263,9 +256,8 @@ export default function Home() {
       {/* AMBIENTE DE FONDO */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.22),rgba(0,0,0,0.98))]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.3),transparent_75%)]" />
-
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none w-full h-full" />
-
+        
         {/* LUNA PÚRPURA */}
         <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-28 h-28 md:w-36 md:h-36 z-0 flex items-center justify-center">
           <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35)_0%,rgba(168,85,247,0.08)_45%,transparent_70%)] animate-pulse" />
@@ -337,7 +329,6 @@ export default function Home() {
 
         {/* SECCIÓN LIBRO */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-left mb-20 items-center">
-          
           <div className="flex justify-center order-2 md:order-1">
             <div className="w-64 h-96 border border-green-500/30 bg-black/70 flex items-center justify-center shadow-[0_0_35px_rgba(21,128,61,0.35)] transform transition-transform hover:scale-105 duration-500 rounded-sm overflow-hidden">
               <Image 
@@ -350,18 +341,15 @@ export default function Home() {
               />
             </div>
           </div>
-
           <div className="order-1 md:order-2">
             <h2 className="text-3xl font-cinzel text-green-300 mb-4 drop-shadow-md">Demonios del Verum</h2>
-            
             <p className="text-md text-gray-300 font-medieval leading-relaxed mb-4">
               El <em>Grimorium Verum</em> es uno de los grimorios más influyentes de la historia de la magia occidental — y también uno de los más incomprendidos.
             </p>
-
             <p className="text-md text-gray-300 font-medieval leading-relaxed mb-6">
               <strong>Demonios del Verum</strong> rescata una parte de ese grimorio que casi nadie ha explorado en el mundo moderno. <strong>Deborah Visper</strong> traduce ese grimorio antiguo a un método operativo para el siglo XXI: sin dogma, sin lenguaje arcaico y sin rituales innecesariamente complicados. Un manual directo para quien busca resultados concretos, con el entrenamiento, la estrategia y el ritual completo para trabajar con estos 18 espíritus.
             </p>
-
+            
             <blockquote className="text-xs font-medieval text-gray-400 border-l-2 border-purple-500 pl-3 mb-6 italic bg-purple-950/20 py-2 rounded-r">
               Aviso: Este contenido es de naturaleza esotérica y se ofrece con fines educativos y de práctica personal.
             </blockquote>
@@ -401,7 +389,7 @@ export default function Home() {
               <span>$12.99 USD</span> <span className="line-through text-gray-300 decoration-red-400">($19.99 USD)</span>
             </div>
           </button>
-
+          
           <button 
             onClick={() => setShowFreeTrialModal(true)}
             className="px-8 py-5 bg-transparent border-2 border-purple-600/80 hover:border-purple-400 text-purple-200 rounded-xl font-medieval text-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 hover:bg-purple-950/40 hover:shadow-[0_10px_30px_rgba(168,85,247,0.4)] cursor-pointer min-w-[280px]"
@@ -413,9 +401,7 @@ export default function Home() {
         {/* CARRUSEL DE BANNERS OLEUMS */}
         <div className="w-full max-w-4xl my-24 relative flex flex-col items-center">
           <Link href="/oleums" className="w-full relative block group">
-            
             <div className="w-full h-48 md:h-72 relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-[0_0_40px_rgba(168,85,247,0.2)] group-hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] transition-all duration-500 bg-black/60">
-              
               {BANNERS.map((src, idx) => (
                 <Image 
                   key={src}
@@ -431,18 +417,15 @@ export default function Home() {
                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
               ))}
-              
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end items-center pb-8 px-4 text-center">
                 <span className="text-[10px] md:text-xs tracking-[0.3em] font-medieval text-green-300 uppercase mb-2">Próximo Lanzamiento</span>
                 <h3 className="text-2xl md:text-4xl font-cinzel text-purple-200 drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] mb-5">
                   Línea de Oleums Ceremoniales
                 </h3>
-                
                 <span className="px-6 py-2.5 md:py-3 bg-purple-900/80 border border-purple-500/50 text-white font-medieval text-sm rounded-lg group-hover:bg-purple-700 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                   Explorar la Colección →
                 </span>
               </div>
-
             </div>
           </Link>
         </div>
@@ -475,8 +458,8 @@ export default function Home() {
         {/* PREGUNTAS FRECUENTES */}
         <div id="faq" className="w-full max-w-3xl text-left mb-24">
           <h3 className="text-3xl font-cinzel text-purple-300 mb-8 text-center">Preguntas Frecuentes</h3>
-          
           <div className="space-y-4 font-medieval">
+            
             <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
               <button 
                 onClick={() => toggleFaq(1)}
@@ -521,14 +504,15 @@ export default function Home() {
                 </div>
               )}
             </div>
+
           </div>
         </div>
-
       </div>
 
       {/* FOOTER */}
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
+          
           <div className="flex items-center gap-4 text-gray-400 text-sm">
             <span>Pagos procesados de forma segura con Stripe</span>
             <span className="text-gray-600">|</span>
@@ -563,7 +547,7 @@ export default function Home() {
             </svg>
             <span className="font-sans text-xs tracking-widest uppercase">Síguenos en Instagram</span>
           </a>
-
+          
           <p>© 2026 Praxis Magick. Todos los derechos reservados.</p>
         </div>
       </footer>
@@ -579,6 +563,7 @@ export default function Home() {
               ✕
             </button>
             <h3 className="text-2xl font-cinzel text-green-300 mb-3 text-center">Confirmación de Preventa</h3>
+            
             <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4 text-sm space-y-2">
               <div className="flex justify-between font-semibold items-center">
                 <span>Demonios del Verum (Preventa)</span>
@@ -591,6 +576,7 @@ export default function Home() {
                 🎟️ Incluye: Cupón de descuento para <strong>Magia Olímpica</strong> (23 Oct).
               </p>
             </div>
+
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1.5">Idioma del e-book:</label>
               <div className="grid grid-cols-2 gap-3">
@@ -618,6 +604,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
+
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
               <input 
@@ -629,6 +616,7 @@ export default function Home() {
                 className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-400 font-sans text-sm"
               />
             </div>
+
             <div className="mb-6 text-xs text-gray-300">
               <label className="flex items-start gap-3 cursor-pointer bg-green-950/20 p-3 rounded-lg border border-green-500/20">
                 <input 
@@ -645,6 +633,7 @@ export default function Home() {
                 </span>
               </label>
             </div>
+
             <button
               disabled={!termsAccepted || !checkoutEmail}
               onClick={handleProceedToPayment}
@@ -674,6 +663,7 @@ export default function Home() {
             <p className="text-xs text-gray-300 text-center mb-5 leading-relaxed">
               Selecciona tu idioma e ingresa tu correo. Al hacerlo, abriremos automáticamente la muestra gratuita de <strong>Demonios del Verum</strong> en una nueva pestaña.
             </p>
+
             <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
               <div>
                 <label className="block text-xs text-purple-300 mb-1.5">Idioma deseado:</label>
@@ -702,6 +692,7 @@ export default function Home() {
                   </button>
                 </div>
               </div>
+
               <div>
                 <label className="block text-xs text-purple-300 mb-1">Correo electrónico:</label>
                 <input 
@@ -714,9 +705,11 @@ export default function Home() {
                   className="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-sans"
                 />
               </div>
+
               <div className="mb-4 text-[10px] text-gray-400 font-sans leading-tight">
                 Al solicitar este contenido, aceptas nuestro <button type="button" onClick={() => openLegalModal("privacidad")} className="text-purple-400 underline">Aviso de Privacidad</button> y aceptas recibir comunicaciones promocionales.
               </div>
+
               <button
                 type="submit"
                 disabled={isSubmittingTrial || !freeTrialEmail}
@@ -728,7 +721,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
     </main>
   );
 }
