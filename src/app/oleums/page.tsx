@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 // IMPORTAMOS EL MEGÁFONO LEGAL:
@@ -103,6 +103,9 @@ export default function OleumsPage() {
   const [touchEndX, setTouchEndX] = useState(0);
   const [touchEndY, setTouchEndY] = useState(0);
   
+  // Ref para reiniciar el scroll de los grimorios
+  const grimoriosScrollRef = useRef<HTMLDivElement>(null);
+  
   const current = OLEUMS_DATA[idx];
 
   // Precarga inmediata de recursos
@@ -114,6 +117,13 @@ export default function OleumsPage() {
       });
     });
   }, []);
+
+  // Efecto para regresar el scroll de grimorios al inicio al cambiar de Oleum
+  useEffect(() => {
+    if (grimoriosScrollRef.current) {
+      grimoriosScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  }, [idx]);
 
   const changeOleum = (newIdx: number) => {
     setFade(true);
@@ -157,6 +167,7 @@ export default function OleumsPage() {
 
     setIsSubmitting(true);
     try {
+      // WEBHOOK SEGURO EN EL SERVIDOR:
       await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -169,7 +180,7 @@ export default function OleumsPage() {
       });
       alert(`¡Registrado! Te avisaremos a ${email} en cuanto ${current.name} esté disponible.`);
       setEmail("");
-      setTermsAccepted(false);
+      setTermsAccepted(false); // Reiniciamos el checkbox
     } catch {
       alert("Hubo un error de conexión. Por favor, intenta de nuevo.");
     } finally {
@@ -299,7 +310,6 @@ export default function OleumsPage() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          style={{ touchAction: "pan-y" }} 
         >
           <div className="flex justify-between items-center w-full max-w-3xl absolute top-[38%] -translate-y-1/2 z-30 px-0 pointer-events-none">
             <button onClick={prevOleum} aria-label="Oleum anterior" className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-transform active:scale-90 p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_15px_rgba(0,0,0,0.95)]">‹</button>
@@ -361,8 +371,11 @@ export default function OleumsPage() {
             </svg>
           </div>
 
-          {/* CARRUSEL DE GRIMORIOS: Sin el touchAction bloqueador y forzando flex-none al 82% */}
-          <div className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-6 md:gap-8 px-6 md:px-0 pb-10 pt-4">
+          {/* CARRUSEL DE GRIMORIOS: Con Referencia para reiniciar el scroll */}
+          <div 
+            ref={grimoriosScrollRef}
+            className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-6 md:gap-8 px-6 md:px-0 pb-10 pt-4"
+          >
             {[1, 2, 3].map((nivel) => (
               <div key={nivel} className="flex-none w-[82%] md:w-auto md:max-w-none snap-center flex flex-col items-center group relative mt-4">
                 
