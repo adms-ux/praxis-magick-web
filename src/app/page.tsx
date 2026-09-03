@@ -37,6 +37,7 @@ export default function Home() {
   const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
   const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
   const [pdfUrlToView, setPdfUrlToView] = useState("");
+  const [rawPdfUrl, setRawPdfUrl] = useState(""); // Nuevo estado para el botón de fallback
 
   const [currentBannerIdx, setCurrentBannerIdx] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -241,14 +242,13 @@ export default function Home() {
         }),
       });
       
-      // Enlace crudo de Supabase
       const baseUrl = freeTrialLanguage === "es" 
         ? "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf" 
         : "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-sample-en.pdf";
       
-      // TRUCO: Envolvemos la URL en el visor de Google para forzar renderizado en celulares
       const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`;
       
+      setRawPdfUrl(baseUrl);
       setPdfUrlToView(viewerUrl);
       setShowFreeTrialModal(false);
       setShowPdfModal(true);
@@ -354,7 +354,7 @@ export default function Home() {
               <strong>Demonios del Verum</strong> rescata una parte de ese grimorio que casi nadie ha explorado en el mundo moderno. <strong>Deborah Visper</strong> traduce ese grimorio antiguo a un método operativo para el siglo XXI: sin dogma, sin lenguaje arcaico y sin rituales innecesariamente complicados. Un manual directo para quien busca resultados concretos, con el entrenamiento, la estrategia y el ritual completo para trabajar con estos 18 espíritus.
             </p>
             
-            {/* NUEVO BOTÓN: SABER MÁS */}
+            {/* BOTÓN: SABER MÁS */}
             <button 
               onClick={() => setShowEbookFaqModal(true)}
               className="inline-flex items-center gap-2 px-5 py-2.5 mb-6 text-sm font-cinzel font-bold tracking-wide text-purple-200 border border-purple-500/50 rounded-lg bg-purple-900/30 hover:bg-purple-800/60 hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all cursor-pointer"
@@ -561,7 +561,6 @@ export default function Home() {
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
               <input type="email" required placeholder="tu@email.com" value={checkoutEmail} onChange={(e) => setCheckoutEmail(e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-400 font-sans text-sm" />
-              {/* TEXTO DE ADVERTENCIA CORREGIDO */}
               <p className="mt-2 text-xs text-green-200/70 italic leading-snug">
                 * Al procesar tu pago, Stripe generará tu recibo. Tu acceso oficial se enviará a este correo electrónico. (Tip: La magia a veces se desvía, revisa tu carpeta de Spam o Correo No Deseado).
               </p>
@@ -611,24 +610,42 @@ export default function Home() {
         </div>
       )}
 
-      {/* NUEVO MODAL: VISOR DE PDF EN PANTALLA COMPLETA */}
+      {/* MODAL VISOR DE PDF EN PANTALLA COMPLETA (OPTIMIZADO PARA MÓVIL) */}
       {showPdfModal && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-2 bg-black/95 backdrop-blur-md">
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-2 md:p-4 bg-black/95 backdrop-blur-md">
           <div className="relative w-full h-full max-h-[90vh] max-w-4xl bg-black border border-purple-500/40 rounded-xl overflow-hidden flex flex-col shadow-[0_0_40px_rgba(168,85,247,0.5)]">
-            <div className="flex justify-between items-center p-3 px-5 bg-purple-950/40 border-b border-purple-500/30">
-              <span className="font-cinzel text-purple-200 tracking-wide font-bold">Demonios del Verum - Muestra Gratuita</span>
+            <div className="flex justify-between items-center p-3 px-5 bg-purple-950/40 border-b border-purple-500/30 shrink-0">
+              <span className="font-cinzel text-purple-200 tracking-wide font-bold text-sm md:text-base">Demonios del Verum - Muestra Gratuita</span>
               <button onClick={() => setShowPdfModal(false)} className="text-gray-300 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
             </div>
-            <iframe 
-              src={pdfUrlToView} 
-              className="w-full flex-grow bg-white" 
-              title="Visor PDF"
-            />
+            
+            {/* Contenedor con scroll nativo para evitar glitches en Android */}
+            <div className="flex-grow w-full h-full overflow-hidden bg-white relative" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <iframe 
+                src={pdfUrlToView} 
+                className="absolute top-0 left-0 w-full h-full border-none" 
+                title="Visor PDF"
+                loading="lazy"
+              />
+            </div>
+            
+            {/* BOTÓN DE SEGURIDAD (FALLBACK) POR SI GOOGLE DOCS FALLA */}
+            <div className="bg-purple-950/80 p-2 text-center flex justify-center items-center gap-3 shrink-0">
+              <span className="text-[10px] md:text-xs text-gray-300 font-sans">¿El documento no carga o se ve borroso?</span>
+              <a 
+                href={rawPdfUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-bold font-sans transition-colors shadow-lg"
+              >
+                Abrir directo
+              </a>
+            </div>
           </div>
         </div>
       )}
 
-      {/* NUEVO MODAL: PREGUNTAS DEL EBOOK (SABER MÁS) */}
+      {/* MODAL: PREGUNTAS DEL EBOOK (SABER MÁS) */}
       {showEbookFaqModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-black border border-green-500/40 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(34,197,94,0.2)] font-medieval text-gray-200 hide-scroll-bar">
@@ -684,7 +701,6 @@ export default function Home() {
               </div>
             </div>
             
-            {/* BOTÓN DE COMPRA DENTRO DEL MODAL */}
             <div className="flex justify-center w-full border-t border-green-500/30 pt-6 mt-4">
               <button 
                 onClick={() => {
