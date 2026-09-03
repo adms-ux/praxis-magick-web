@@ -90,14 +90,14 @@ const OLEUMS_DATA = [
 ];
 
 export default function OleumsPage() {
-  const { openLegalModal } = useLegal(); // INICIALIZAMOS EL MEGÁFONO
+  const { openLegalModal } = useLegal(); 
   const [idx, setIdx] = useState(0);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [fade, setFade] = useState(false);
 
-  // Swipe táctil en móvil para el carrusel principal
+  // Swipe táctil en móvil
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartY, setTouchStartY] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
@@ -107,16 +107,6 @@ export default function OleumsPage() {
   const grimoriosScrollRef = useRef<HTMLDivElement>(null);
   
   const current = OLEUMS_DATA[idx];
-
-  // Precarga inmediata de recursos
-  useEffect(() => {
-    OLEUMS_DATA.forEach((item) => {
-      [item.bg, item.bgMobile, item.image, item.titleImage].forEach((src) => {
-        const img = new window.Image();
-        img.src = src;
-      });
-    });
-  }, []);
 
   // Efecto para regresar el scroll de grimorios al inicio al cambiar de Oleum
   useEffect(() => {
@@ -167,7 +157,6 @@ export default function OleumsPage() {
 
     setIsSubmitting(true);
     try {
-      // WEBHOOK SEGURO EN EL SERVIDOR:
       await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -180,7 +169,7 @@ export default function OleumsPage() {
       });
       alert(`¡Registrado! Te avisaremos a ${email} en cuanto ${current.name} esté disponible.`);
       setEmail("");
-      setTermsAccepted(false); // Reiniciamos el checkbox
+      setTermsAccepted(false);
     } catch {
       alert("Hubo un error de conexión. Por favor, intenta de nuevo.");
     } finally {
@@ -209,7 +198,6 @@ export default function OleumsPage() {
           0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.5; }
           50% { transform: scale(1.15) translate(3%, -4%); opacity: 0.8; }
         }
-        /* Animación para la flecha de deslizar en móvil */
         @keyframes slide-hint {
           0%, 100% { transform: translateX(0); }
           50% { transform: translateX(8px); }
@@ -223,7 +211,6 @@ export default function OleumsPage() {
         .anim-slide-hint {
           animation: slide-hint 1.5s ease-in-out infinite;
         }
-        /* Ocultar barra de scroll para el carrusel horizontal */
         .hide-scroll-bar {
           -ms-overflow-style: none;
           scrollbar-width: none;
@@ -234,27 +221,48 @@ export default function OleumsPage() {
       `}</style>
 
       {/* ========================================== */}
-      {/* FONDO ANCLADO ESTÁTICO */}
+      {/* FONDO ANCLADO ESTÁTICO (OPTIMIZADO) */}
       {/* ========================================== */}
       <div 
         className="fixed top-0 left-0 w-screen h-screen z-0 pointer-events-none bg-black"
         style={{ position: "fixed", width: "100vw", height: "100vh" }}
       >
-        {OLEUMS_DATA.map((item, index) => (
-          <div
-            key={item.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              index === idx ? "opacity-40" : "opacity-0"
-            }`}
-          >
-            <div className="relative w-full h-full md:hidden">
-              <Image src={item.bgMobile} alt="" fill priority={index === 0} className="object-cover object-center" />
+        {OLEUMS_DATA.map((item, index) => {
+          // Motor de optimización: Solo renderizamos el actual, el de atrás y el de adelante.
+          const isCurrent = index === idx;
+          const isPrev = index === (idx === 0 ? OLEUMS_DATA.length - 1 : idx - 1);
+          const isNext = index === (idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
+
+          if (!isCurrent && !isPrev && !isNext) return null;
+
+          return (
+            <div
+              key={item.id}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                isCurrent ? "opacity-40" : "opacity-0"
+              }`}
+            >
+              <div className="relative w-full h-full md:hidden">
+                <Image 
+                  src={item.bgMobile} 
+                  alt="" 
+                  fill 
+                  priority={isCurrent} // Solo el actual le pide máxima prioridad a Next.js
+                  className="object-cover object-center" 
+                />
+              </div>
+              <div className="relative w-full h-full hidden md:block">
+                <Image 
+                  src={item.bg} 
+                  alt="" 
+                  fill 
+                  priority={isCurrent} 
+                  className="object-cover object-center" 
+                />
+              </div>
             </div>
-            <div className="relative w-full h-full hidden md:block">
-              <Image src={item.bg} alt="" fill priority={index === 0} className="object-cover object-center" />
-            </div>
-          </div>
-        ))}
+          );
+        })}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_90%)]" />
       </div>
 
@@ -352,7 +360,7 @@ export default function OleumsPage() {
         </div>
 
         {/* ========================================== */}
-        {/* SECCIÓN DE GRIMORIOS (UX/UI MEJORADA CON FLECHA Y PEEKING) */}
+        {/* SECCIÓN DE GRIMORIOS */}
         {/* ========================================== */}
         <div className={`w-full max-w-5xl mx-auto flex flex-col items-center z-20 mb-20 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"}`}>
           <h3 className="text-2xl font-cinzel text-gray-200 mb-2 drop-shadow-md">Grimorios de Expansión</h3>
@@ -360,7 +368,6 @@ export default function OleumsPage() {
             Al adquirir este Oleum, obtendrás el primer volumen de regalo. Los grimorios avanzados de {current.spirit} estarán disponibles para desbloquear.
           </p>
 
-          {/* INDICADOR DE DESLIZAR (SÓLO MÓVIL) */}
           <div 
             className="md:hidden flex items-center justify-center gap-2 mb-2 w-full anim-slide-hint"
             style={{ color: current.color, textShadow: `0 0 10px ${current.color}80` }}
@@ -371,7 +378,6 @@ export default function OleumsPage() {
             </svg>
           </div>
 
-          {/* CARRUSEL DE GRIMORIOS: Con Referencia para reiniciar el scroll */}
           <div 
             ref={grimoriosScrollRef}
             className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-6 md:gap-8 px-6 md:px-0 pb-10 pt-4"
