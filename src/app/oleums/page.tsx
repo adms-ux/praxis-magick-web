@@ -326,7 +326,6 @@ export default function OleumsPage() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          style={{ touchAction: "pan-y" }} /* Permite hacer scroll hacia abajo sin atorarse */
         >
           {/* Flechas de Navegación */}
           <div className="flex justify-between items-center w-full max-w-3xl absolute top-[38%] -translate-y-1/2 z-30 px-0 pointer-events-none">
@@ -422,7 +421,7 @@ export default function OleumsPage() {
         </div>
 
         {/* ========================================== */}
-        {/* SECCIÓN DE GRIMORIOS (UX/UI MEJORADA)      */}
+        {/* SECCIÓN DE GRIMORIOS (UX/UI MEJORADA CON PEEKING) */}
         {/* ========================================== */}
         <div 
           className={`w-full max-w-5xl mx-auto flex flex-col items-center z-20 mb-20 transition-opacity duration-300 ${
@@ -434,13 +433,12 @@ export default function OleumsPage() {
             Al adquirir este Oleum, obtendrás el primer volumen de regalo. Los grimorios avanzados de {current.spirit} estarán disponibles para desbloquear.
           </p>
 
-          {/* Grid responsivo: scroll horizontal en móvil, 3 columnas en PC */}
-          {/* Se elimina explícitamente el style pan-y para permitir el deslizamiento lateral (swipe) */}
+          {/* El ajuste clave está aquí: Se agregó w-[75vw] para que en móvil las tarjetas abarquen 75% de la pantalla, dejando asomar la siguiente */}
           <div 
-            className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-8 px-4 md:px-0 pb-10 pt-4"
+            className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-5 md:gap-8 px-8 md:px-0 pb-10 pt-4"
           >
             {[1, 2, 3].map((nivel) => (
-              <div key={nivel} className="min-w-[260px] md:min-w-0 snap-center flex flex-col items-center group relative mt-4">
+              <div key={nivel} className="w-[75vw] max-w-[260px] shrink-0 md:w-auto md:max-w-none snap-center flex flex-col items-center group relative mt-4">
                 
                 {/* Etiqueta dinámica: Regalo vs Nivel 2/3 */}
                 <div
@@ -456,7 +454,7 @@ export default function OleumsPage() {
                 
                 {/* Portada del Grimorio con Resplandor y ajuste object-contain */}
                 <div 
-                  className="relative w-full aspect-[4/5] max-w-[260px] rounded-md overflow-hidden bg-black z-20 transition-all duration-500"
+                  className="relative w-full aspect-[4/5] rounded-md overflow-hidden bg-black z-20 transition-all duration-500"
                   style={{
                      boxShadow: `0 0 25px 4px ${current.color}80`,
                      border: `1px solid ${current.color}50`
