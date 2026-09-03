@@ -97,7 +97,7 @@ export default function OleumsPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [fade, setFade] = useState(false);
 
-  // Swipe táctil en móvil
+  // Swipe táctil en móvil para el carrusel principal
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartY, setTouchStartY] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
@@ -157,7 +157,6 @@ export default function OleumsPage() {
 
     setIsSubmitting(true);
     try {
-      // WEBHOOK SEGURO EN EL SERVIDOR:
       await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -170,7 +169,7 @@ export default function OleumsPage() {
       });
       alert(`¡Registrado! Te avisaremos a ${email} en cuanto ${current.name} esté disponible.`);
       setEmail("");
-      setTermsAccepted(false); // Reiniciamos el checkbox
+      setTermsAccepted(false);
     } catch {
       alert("Hubo un error de conexión. Por favor, intenta de nuevo.");
     } finally {
@@ -199,11 +198,19 @@ export default function OleumsPage() {
           0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.5; }
           50% { transform: scale(1.15) translate(3%, -4%); opacity: 0.8; }
         }
+        /* Animación para la flecha de deslizar en móvil */
+        @keyframes slide-hint {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(8px); }
+        }
         .anim-title-pulse {
           animation: pulse-title 4s ease-in-out infinite;
         }
         .anim-smoke {
           animation: smoke-float 8s ease-in-out infinite alternate;
+        }
+        .anim-slide-hint {
+          animation: slide-hint 1.5s ease-in-out infinite;
         }
         /* Ocultar barra de scroll para el carrusel horizontal */
         .hide-scroll-bar {
@@ -230,22 +237,10 @@ export default function OleumsPage() {
             }`}
           >
             <div className="relative w-full h-full md:hidden">
-              <Image
-                src={item.bgMobile}
-                alt=""
-                fill
-                priority={index === 0}
-                className="object-cover object-center"
-              />
+              <Image src={item.bgMobile} alt="" fill priority={index === 0} className="object-cover object-center" />
             </div>
             <div className="relative w-full h-full hidden md:block">
-              <Image
-                src={item.bg}
-                alt=""
-                fill
-                priority={index === 0}
-                className="object-cover object-center"
-              />
+              <Image src={item.bg} alt="" fill priority={index === 0} className="object-cover object-center" />
             </div>
           </div>
         ))}
@@ -279,16 +274,11 @@ export default function OleumsPage() {
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10">
             <div 
               className="anim-smoke absolute w-[380px] md:w-[550px] h-[160px] md:h-[220px]"
-              style={{
-                background: "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(34,197,94,0.38) 0%, rgba(16,185,129,0.18) 45%, transparent 75%)"
-              }}
+              style={{ background: "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(34,197,94,0.38) 0%, rgba(16,185,129,0.18) 45%, transparent 75%)" }}
             />
             <div 
               className="anim-smoke absolute w-[300px] md:w-[420px] h-[120px] md:h-[180px]"
-              style={{
-                animationDelay: "-3s",
-                background: "radial-gradient(ellipse 55% 45% at 50% 50%, rgba(74,222,128,0.3) 0%, rgba(34,197,94,0.12) 50%, transparent 75%)"
-              }}
+              style={{ animationDelay: "-3s", background: "radial-gradient(ellipse 55% 45% at 50% 50%, rgba(74,222,128,0.3) 0%, rgba(34,197,94,0.12) 50%, transparent 75%)" }}
             />
           </div>
           <div className="relative w-full max-w-[340px] md:max-w-[440px] h-16 md:h-20">
@@ -339,7 +329,7 @@ export default function OleumsPage() {
         </div>
 
         {/* LEYENDA Y TEASER */}
-        <div className={`w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-14 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"}`}>
+        <div className={`w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-10 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"}`}>
           <div className="bg-black/70 border border-white/10 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-[0_0_35px_rgba(0,0,0,0.7)]">
             <blockquote className="text-lg md:text-xl font-celtic-clean text-gray-200 leading-relaxed mb-8 tracking-wide">
               "{current.legend}"
@@ -352,21 +342,29 @@ export default function OleumsPage() {
         </div>
 
         {/* ========================================== */}
-        {/* SECCIÓN DE GRIMORIOS (UX/UI MEJORADA CON PEEKING OBLIGATORIO) */}
+        {/* SECCIÓN DE GRIMORIOS (UX/UI MEJORADA CON FLECHA Y PEEKING) */}
         {/* ========================================== */}
         <div className={`w-full max-w-5xl mx-auto flex flex-col items-center z-20 mb-20 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"}`}>
           <h3 className="text-2xl font-cinzel text-gray-200 mb-2 drop-shadow-md">Grimorios de Expansión</h3>
-          <p className="text-sm text-gray-400 font-sans mb-12 text-center max-w-xl px-4 leading-relaxed">
+          <p className="text-sm text-gray-400 font-sans mb-8 text-center max-w-xl px-4 leading-relaxed">
             Al adquirir este Oleum, obtendrás el primer volumen de regalo. Los grimorios avanzados de {current.spirit} estarán disponibles para desbloquear.
           </p>
 
-          {/* AJUSTE PARA PEEKING: Se alinea el contenido a la izquierda (snap-start) y se reduce el ancho a 75vw */}
+          {/* INDICADOR DE DESLIZAR (SÓLO MÓVIL) */}
           <div 
-            className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-4 md:gap-8 px-6 md:px-0 pb-12 pt-6"
-            style={{ scrollPaddingLeft: '1.5rem', touchAction: 'pan-y' }}
+            className="md:hidden flex items-center justify-center gap-2 mb-2 w-full anim-slide-hint"
+            style={{ color: current.color, textShadow: `0 0 10px ${current.color}80` }}
           >
+            <span className="text-[10px] font-sans font-bold tracking-[0.2em] uppercase">Desliza para ver más</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </div>
+
+          {/* CARRUSEL DE GRIMORIOS: Sin el touchAction bloqueador y forzando flex-none al 82% */}
+          <div className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-6 md:gap-8 px-6 md:px-0 pb-10 pt-4">
             {[1, 2, 3].map((nivel) => (
-              <div key={nivel} className="w-[75vw] sm:w-[300px] shrink-0 md:w-auto md:max-w-none snap-start flex flex-col items-center group relative mt-4">
+              <div key={nivel} className="flex-none w-[82%] md:w-auto md:max-w-none snap-center flex flex-col items-center group relative mt-4">
                 
                 <div
                   className="absolute -top-4 z-30 px-5 py-1.5 text-xs font-bold font-serif-classic uppercase tracking-widest shadow-lg transition-transform duration-300 group-hover:-translate-y-1 rounded-sm"
@@ -376,7 +374,7 @@ export default function OleumsPage() {
                 </div>
                 
                 <div 
-                  className="relative w-full aspect-[4/5] max-w-[280px] rounded-md overflow-hidden bg-black z-20 transition-all duration-500"
+                  className="relative w-full aspect-[4/5] rounded-md overflow-hidden bg-black z-20 transition-all duration-500"
                   style={{ boxShadow: `0 0 25px 4px ${current.color}80`, border: `1px solid ${current.color}50` }}
                 >
                   <Image
