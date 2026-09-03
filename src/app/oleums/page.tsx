@@ -326,6 +326,7 @@ export default function OleumsPage() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          style={{ touchAction: "pan-y" }} /* Permite hacer scroll hacia abajo sin atorarse */
         >
           {/* Flechas de Navegación */}
           <div className="flex justify-between items-center w-full max-w-3xl absolute top-[38%] -translate-y-1/2 z-30 px-0 pointer-events-none">
@@ -429,42 +430,45 @@ export default function OleumsPage() {
           }`}
         >
           <h3 className="text-2xl font-cinzel text-gray-200 mb-2 drop-shadow-md">Grimorios de Expansión</h3>
-          <p className="text-sm text-gray-400 font-sans mb-10 text-center max-w-xl px-4 leading-relaxed">
+          <p className="text-sm text-gray-400 font-sans mb-12 text-center max-w-xl px-4 leading-relaxed">
             Al adquirir este Oleum, obtendrás el primer volumen de regalo. Los grimorios avanzados de {current.spirit} estarán disponibles para desbloquear.
           </p>
 
           {/* Grid responsivo: scroll horizontal en móvil, 3 columnas en PC */}
-          <div className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-8 px-4 md:px-0 pb-6">
+          {/* Se agrega touchAction: 'pan-y' para que el usuario no se atore al bajar */}
+          <div 
+            className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-8 px-4 md:px-0 pb-10 pt-4"
+            style={{ touchAction: 'pan-y' }}
+          >
             {[1, 2, 3].map((nivel) => (
-              <div key={nivel} className="min-w-[220px] md:min-w-0 snap-center flex flex-col items-center group relative">
+              <div key={nivel} className="min-w-[260px] md:min-w-0 snap-center flex flex-col items-center group relative mt-4">
                 
-                {/* Resplandor tenue del color del oleum */}
+                {/* Etiqueta dinámica: Regalo vs Nivel 2/3 */}
                 <div
-                  className="absolute inset-0 scale-[1.15] pointer-events-none transition-all duration-700 opacity-40 group-hover:opacity-70 rounded-xl"
-                  style={{
-                    background: `radial-gradient(circle at 50% 50%, ${current.color}45 0%, transparent 65%)`,
-                  }}
-                />
-                
-                {/* Etiqueta dinámica: Regalo vs Precio */}
-                <div
-                  className="absolute -top-3 z-30 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg border border-white/20 transition-transform duration-300 group-hover:-translate-y-1"
+                  className="absolute -top-4 z-30 px-5 py-1.5 text-xs font-bold font-serif-classic uppercase tracking-widest shadow-lg transition-transform duration-300 group-hover:-translate-y-1 rounded-sm"
                   style={{ 
-                    backgroundColor: nivel === 1 ? current.color : "#111827", 
-                    color: nivel === 1 ? "#000" : "#d1d5db" 
+                    backgroundColor: current.color, 
+                    color: "#000", 
+                    boxShadow: `0 4px 10px ${current.color}50`
                   }}
                 >
-                  {nivel === 1 ? "De Regalo" : `Nivel ${nivel} (Premium)`}
+                  {nivel === 1 ? "De Regalo" : `Nivel ${nivel}`}
                 </div>
                 
-                {/* Portada del Grimorio */}
-                <div className="relative w-full aspect-[2/3] max-w-[220px] border border-white/10 rounded-lg overflow-hidden bg-black/80 z-20 shadow-[0_15px_30px_rgba(0,0,0,0.8)]">
+                {/* Portada del Grimorio con Resplandor y ajuste object-contain */}
+                <div 
+                  className="relative w-full aspect-[4/5] max-w-[260px] rounded-md overflow-hidden bg-black z-20 transition-all duration-500"
+                  style={{
+                     boxShadow: `0 0 25px 4px ${current.color}80`,
+                     border: `1px solid ${current.color}50`
+                  }}
+                >
                   <Image
                     src={`/grimorio-${current.id}-${nivel}.png`}
                     alt={`Grimorio Nivel ${nivel} - ${current.name}`}
                     fill
-                    sizes="(max-width: 768px) 220px, 280px"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 260px, 300px"
+                    className="object-contain transition-transform duration-700 group-hover:scale-105"
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
                 </div>
