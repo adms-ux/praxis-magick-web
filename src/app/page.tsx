@@ -14,30 +14,32 @@ const BANNERS = [
   "/banner-danse.png"
 ];
 
+// Expresión regular para validar formato de correo electrónico
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Home() {
   const { openLegalModal } = useLegal(); // INICIALIZAMOS EL MEGÁFONO
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
   const [freeTrialEmail, setFreeTrialEmail] = useState("");
   const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
   const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
   const [currentBannerIdx, setCurrentBannerIdx] = useState(0);
-  
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Contador de la preventa
   useEffect(() => {
     const targetDate = new Date(2026, 8, 23, 23, 59, 59).getTime();
-
     const interval = setInterval(() => {
       const now = new Date().getTime();
       const difference = targetDate - now;
-
       if (difference > 0) {
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
@@ -47,7 +49,6 @@ export default function Home() {
         });
       } else clearInterval(interval);
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -59,7 +60,7 @@ export default function Home() {
     return () => clearInterval(bannerInterval);
   }, []);
 
-  // Animación del fondo (Rayos)
+  // Animación del fondo (Rayos) - OPTIMIZADA PARA RAM
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -69,6 +70,7 @@ export default function Home() {
     let animationFrameId: number;
     let width = 0;
     let height = 0;
+    let isActive = true; // Control de pestaña activa
 
     const resizeCanvas = () => {
       if (!canvas) return;
@@ -83,7 +85,6 @@ export default function Home() {
       alpha: number;
       path: { x: number; y: number }[];
     }
-
     let activeLightnings: Lightning[] = [];
     let flashAlpha = 0;
 
@@ -93,13 +94,11 @@ export default function Home() {
       let currentY = y1;
       const steps = 18 + Math.random() * 8;
       const dy = (y2 - y1) / steps;
-
       for (let i = 0; i < steps; i++) {
         currentX += (Math.random() - 0.5) * 45;
         currentY += dy;
         path.push({ x: currentX, y: currentY });
       }
-
       const branches: Lightning[] = [];
       if (depth < 2 && Math.random() > 0.35) {
         const branchIndex = Math.floor(Math.random() * (path.length - 2)) + 1;
@@ -138,7 +137,6 @@ export default function Home() {
       ctx.shadowColor = "#c084fc";
       ctx.shadowBlur = 18;
       ctx.stroke();
-
       bolt.branches.forEach((branch) => {
         branch.alpha = bolt.alpha * 0.65;
         drawLightning(branch);
@@ -146,14 +144,17 @@ export default function Home() {
     };
 
     const render = () => {
+      if (!isActive) {
+          // Si la pestaña no está activa, solicita el siguiente frame pero no procesa cálculos pesados.
+          animationFrameId = requestAnimationFrame(render);
+          return;
+      }
       ctx.clearRect(0, 0, width, height);
-
       if (flashAlpha > 0) {
         ctx.fillStyle = `rgba(168, 85, 247, ${flashAlpha})`;
         ctx.fillRect(0, 0, width, height);
         flashAlpha -= 0.03;
       }
-
       activeLightnings.forEach((bolt, index) => {
         drawLightning(bolt);
         bolt.alpha -= 0.04;
@@ -161,17 +162,20 @@ export default function Home() {
           activeLightnings.splice(index, 1);
         }
       });
-
       nextStrikeTimer++;
       if (nextStrikeTimer > 160 + Math.random() * 220) {
         triggerStrike();
         nextStrikeTimer = 0;
       }
-
       animationFrameId = requestAnimationFrame(render);
     };
-
     render();
+
+    // Optimización: Pausar si la pestaña no está visible
+    const handleVisibilityChange = () => {
+        isActive = !document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const handlePageShow = (e: PageTransitionEvent) => {
       if (e.persisted) {
@@ -181,10 +185,10 @@ export default function Home() {
       }
     };
     window.addEventListener("pageshow", handlePageShow);
-
     return () => {
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -200,19 +204,25 @@ export default function Home() {
       alert("Por favor ingresa tu correo electrónico.");
       return;
     }
+    if (!EMAIL_REGEX.test(checkoutEmail)) {
+        alert("Por favor, ingresa un formato de correo electrónico válido.");
+        return;
+    }
     // LINK OFICIAL DE STRIPE INTEGRADO:
     const stripeUrl = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(
       checkoutEmail
     )}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
-    
     window.location.href = stripeUrl;
   };
 
   const handleSubmitFreeTrial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!freeTrialEmail) return;
+    if (!EMAIL_REGEX.test(freeTrialEmail)) {
+        alert("Por favor, ingresa un formato de correo electrónico válido.");
+        return;
+    }
     setIsSubmittingTrial(true);
-
     try {
       // WEBHOOK SEGURO EN EL SERVIDOR:
       await fetch("/api/webhook", {
@@ -225,10 +235,8 @@ export default function Home() {
           timestamp: new Date().toISOString()
         }),
       });
-
       const pdfUrl = freeTrialLanguage === "es" ? "/muestra-verum-es.pdf" : "/muestra-verum-en.pdf";
       window.open(pdfUrl, "_blank");
-
       alert("¡Redirigiendo a tu muestra gratuita! También guardaremos tu correo para enviarte recordatorios y novedades.");
       setShowFreeTrialModal(false);
       setFreeTrialEmail("");
@@ -252,14 +260,12 @@ export default function Home() {
         .font-medieval { font-family: var(--font-medieval); }
         .font-serif-classic { font-family: 'Times New Roman', Times, serif; }
       `}</style>
-
       {/* AMBIENTE DE FONDO */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.22),rgba(0,0,0,0.98))]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.3),transparent_75%)]" />
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none w-full h-full" />
-        
         {/* LUNA PÚRPURA */}
-        <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-28 h-28 md:w-36 md:h-36 z-0 flex items-center justify-center">
+        <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-28 h-28 md:w-36 h-36 z-0 flex items-center justify-center">
           <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35)_0%,rgba(168,85,247,0.08)_45%,transparent_70%)] animate-pulse" />
           <Image 
             src="/luna.png" 
@@ -270,7 +276,6 @@ export default function Home() {
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         </div>
-
         {/* PARTÍCULAS */}
         <div className="absolute inset-0">
           <div className="particle absolute left-[15%] bottom-0 w-1.5 h-1.5 bg-green-300 rounded-full blur-[1px]" style={{ animationDelay: '0s' }}></div>
@@ -279,10 +284,8 @@ export default function Home() {
           <div className="particle absolute left-[80%] bottom-0 w-2 h-2 bg-purple-400 rounded-full blur-[1px]" style={{ animationDelay: '2s' }}></div>
         </div>
       </div>
-
       {/* CONTENIDO PRINCIPAL */}
       <div className="relative z-10 flex flex-col items-center text-center px-6 w-full max-w-5xl pt-10 pb-20">
-        
         {/* LOGO */}
         <div className="w-28 h-28 md:w-36 md:h-36 mb-6 rounded-full border border-purple-500/30 bg-black/50 backdrop-blur-md flex items-center justify-center shadow-[0_0_25px_rgba(168,85,247,0.25)] overflow-hidden p-2">
           <Image 
@@ -294,18 +297,15 @@ export default function Home() {
             priority
           />
         </div>
-
         <h1 className="text-5xl md:text-7xl font-bold mb-4 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-gray-300 to-gray-500 tracking-widest drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] uppercase">
           Praxis Magick
         </h1>
-
         {/* TEXTO DE INTRODUCCIÓN */}
         <div className="w-full max-w-2xl text-center mb-6 px-4">
           <p className="font-serif-classic text-sm md:text-base text-gray-300 leading-relaxed bg-black/40 border border-white/5 backdrop-blur-md p-5 rounded-xl shadow-inner">
             «Praxis Magick es una tienda de productos esotéricos consagrados a los espíritus de la alta magia. Nuestro arsenal, tanto digital como físico, está dirigido a practicantes dedicados y al público en general. Sé testigo del nacimiento y la expansión de este proyecto mágico.»
           </p>
         </div>
-
         {/* CONTADOR */}
         <div className="px-6 md:px-10 py-6 mb-10 mt-2 border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.8)]">
           <p className="text-4xl md:text-6xl font-mono text-green-400 tracking-widest drop-shadow-[0_0_15px_rgba(74,222,128,0.6)]">
@@ -315,7 +315,6 @@ export default function Home() {
             <span>Días</span> <span>Hrs</span> <span>Min</span> <span>Seg</span>
           </p>
         </div>
-
         {/* NAVEGACIÓN RÁPIDA */}
         <div className="flex flex-wrap justify-center items-center gap-4 mb-16 text-sm font-medieval text-gray-300">
           <a href="#instrucciones" className="hover:text-green-400 transition-colors border-b border-transparent hover:border-green-400 pb-0.5">
@@ -326,7 +325,6 @@ export default function Home() {
             ↓ Preguntas frecuentes
           </a>
         </div>
-
         {/* SECCIÓN LIBRO */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-left mb-20 items-center">
           <div className="flex justify-center order-2 md:order-1">
@@ -349,11 +347,9 @@ export default function Home() {
             <p className="text-md text-gray-300 font-medieval leading-relaxed mb-6">
               <strong>Demonios del Verum</strong> rescata una parte de ese grimorio que casi nadie ha explorado en el mundo moderno. <strong>Deborah Visper</strong> traduce ese grimorio antiguo a un método operativo para el siglo XXI: sin dogma, sin lenguaje arcaico y sin rituales innecesariamente complicados. Un manual directo para quien busca resultados concretos, con el entrenamiento, la estrategia y el ritual completo para trabajar con estos 18 espíritus.
             </p>
-            
             <blockquote className="text-xs font-medieval text-gray-400 border-l-2 border-purple-500 pl-3 mb-6 italic bg-purple-950/20 py-2 rounded-r">
               Aviso: Este contenido es de naturaleza esotérica y se ofrece con fines educativos y de práctica personal.
             </blockquote>
-
             <div className="p-5 border border-purple-800/40 rounded-xl bg-purple-950/20 backdrop-blur-sm mb-6">
               <h3 className="text-lg font-cinzel text-purple-300 mb-2 flex items-center gap-2">
                 <span>🎟️</span> Bono especial de preventa
@@ -373,7 +369,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
         {/* BOTONES PREVENTA Y PRUEBA GRATIS */}
         <div className="flex flex-col sm:flex-row gap-6 w-full justify-center items-center mb-10">
           <button 
@@ -389,7 +384,6 @@ export default function Home() {
               <span>$12.99 USD</span> <span className="line-through text-gray-300 decoration-red-400">($19.99 USD)</span>
             </div>
           </button>
-          
           <button 
             onClick={() => setShowFreeTrialModal(true)}
             className="px-8 py-5 bg-transparent border-2 border-purple-600/80 hover:border-purple-400 text-purple-200 rounded-xl font-medieval text-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 hover:bg-purple-950/40 hover:shadow-[0_10px_30px_rgba(168,85,247,0.4)] cursor-pointer min-w-[280px]"
@@ -397,7 +391,6 @@ export default function Home() {
             Reclamar prueba gratis
           </button>
         </div>
-
         {/* CARRUSEL DE BANNERS OLEUMS */}
         <div className="w-full max-w-4xl my-24 relative flex flex-col items-center">
           <Link href="/oleums" className="w-full relative block group">
@@ -429,7 +422,6 @@ export default function Home() {
             </div>
           </Link>
         </div>
-
         {/* INSTRUCCIONES DE COMPRA */}
         <div id="instrucciones" className="w-full max-w-3xl text-left border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md p-8 mb-20 shadow-xl">
           <h3 className="text-2xl font-cinzel text-green-300 mb-6 text-center">Instrucciones de Compra y Entrega</h3>
@@ -454,12 +446,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-
         {/* PREGUNTAS FRECUENTES */}
         <div id="faq" className="w-full max-w-3xl text-left mb-24">
           <h3 className="text-3xl font-cinzel text-purple-300 mb-8 text-center">Preguntas Frecuentes</h3>
           <div className="space-y-4 font-medieval">
-            
             <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
               <button 
                 onClick={() => toggleFaq(1)}
@@ -474,7 +464,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-
             <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
               <button 
                 onClick={() => toggleFaq(2)}
@@ -489,7 +478,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-
             <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
               <button 
                 onClick={() => toggleFaq(3)}
@@ -504,22 +492,18 @@ export default function Home() {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </div>
-
       {/* FOOTER */}
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
-          
           <div className="flex items-center gap-4 text-gray-400 text-sm">
             <span>Pagos procesados de forma segura con Stripe</span>
             <span className="text-gray-600">|</span>
             <span className="font-sans font-bold tracking-wider text-gray-300">VISA</span>
             <span className="font-sans font-bold tracking-wider text-gray-300">MASTERCARD</span>
           </div>
-
           <div className="flex flex-wrap justify-center gap-6 text-gray-400">
             <button 
               onClick={() => openLegalModal("terminos")} 
@@ -535,7 +519,6 @@ export default function Home() {
               Aviso de Privacidad
             </button>
           </div>
-
           <a 
             href="https://www.instagram.com/praxis.magick?igsh=MWRucmEwNmwyejQxMA==&igsi=MWRucmEwNmwyejQxMA==" 
             target="_blank" 
@@ -547,11 +530,9 @@ export default function Home() {
             </svg>
             <span className="font-sans text-xs tracking-widest uppercase">Síguenos en Instagram</span>
           </a>
-          
           <p>© 2026 Praxis Magick. Todos los derechos reservados.</p>
         </div>
       </footer>
-
       {/* MODAL CHECKOUT */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -563,7 +544,6 @@ export default function Home() {
               ✕
             </button>
             <h3 className="text-2xl font-cinzel text-green-300 mb-3 text-center">Confirmación de Preventa</h3>
-            
             <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4 text-sm space-y-2">
               <div className="flex justify-between font-semibold items-center">
                 <span>Demonios del Verum (Preventa)</span>
@@ -576,7 +556,6 @@ export default function Home() {
                 🎟️ Incluye: Cupón de descuento para <strong>Magia Olímpica</strong> (23 Oct).
               </p>
             </div>
-
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1.5">Idioma del e-book:</label>
               <div className="grid grid-cols-2 gap-3">
@@ -604,7 +583,6 @@ export default function Home() {
                 </button>
               </div>
             </div>
-
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
               <input 
@@ -615,8 +593,10 @@ export default function Home() {
                 onChange={(e) => setCheckoutEmail(e.target.value)}
                 className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-400 font-sans text-sm"
               />
+              <p className="mt-2 text-xs text-green-200/70 italic leading-snug">
+                * ¡Tu lugar está asegurado! Hemos enviado tu comprobante y las instrucciones de acceso a tu correo. (Tip: A veces la magia se desvía un poco; si no lo ves en tu bandeja de entrada, por favor revisa tu carpeta de Spam).
+              </p>
             </div>
-
             <div className="mb-6 text-xs text-gray-300">
               <label className="flex items-start gap-3 cursor-pointer bg-green-950/20 p-3 rounded-lg border border-green-500/20">
                 <input 
@@ -633,7 +613,6 @@ export default function Home() {
                 </span>
               </label>
             </div>
-
             <button
               disabled={!termsAccepted || !checkoutEmail}
               onClick={handleProceedToPayment}
@@ -648,7 +627,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
       {/* MODAL PRUEBA GRATUITA */}
       {showFreeTrialModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -663,7 +641,6 @@ export default function Home() {
             <p className="text-xs text-gray-300 text-center mb-5 leading-relaxed">
               Selecciona tu idioma e ingresa tu correo. Al hacerlo, abriremos automáticamente la muestra gratuita de <strong>Demonios del Verum</strong> en una nueva pestaña.
             </p>
-
             <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
               <div>
                 <label className="block text-xs text-purple-300 mb-1.5">Idioma deseado:</label>
@@ -692,7 +669,6 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs text-purple-300 mb-1">Correo electrónico:</label>
                 <input 
@@ -705,11 +681,9 @@ export default function Home() {
                   className="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-sans"
                 />
               </div>
-
               <div className="mb-4 text-[10px] text-gray-400 font-sans leading-tight">
                 Al solicitar este contenido, aceptas nuestro <button type="button" onClick={() => openLegalModal("privacidad")} className="text-purple-400 underline">Aviso de Privacidad</button> y aceptas recibir comunicaciones promocionales.
               </div>
-
               <button
                 type="submit"
                 disabled={isSubmittingTrial || !freeTrialEmail}

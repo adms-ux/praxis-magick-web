@@ -8,27 +8,30 @@ import { useLegal } from "../Context/LegalContext";
 // ==========================================
 // 1. BASE DE DATOS Y TEXTOS
 // ==========================================
-const DEFINICION_OLEOUMS = "Los Oleoums Medievales de Praxis Magick son aceites esenciales intencionados para bendecir o imbuir cualquier objeto ungido con la esencia de la fuerza daemónica o el propósito para el cual fue creado. Se utilizan para ungir objetos, velas o a uno mismo.";
+const DEFINICION_OLEUMS = "Los Oleums Medievales de Praxis Magick son aceites esenciales intencionados para bendecir o imbuir cualquier objeto ungido con la esencia de la fuerza daemónica o el propósito para el cual fue creado. Se utilizan para ungir objetos, velas o a uno mismo.";
 const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que obtendrás de regalo un grimorio digital exclusivo y demás grimorios que puedes desbloquear. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
+
+// Expresión regular para validar formato de correo electrónico
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const OLEUMS_DATA = [
   { 
     id: "jester", 
     name: "Jester's Road", 
     spirit: "Surgat", 
-    category: "OLEOUM ABRE CAMINOS", 
+    category: "OLEUM ABRE CAMINOS", 
     color: "#f97316",
     bg: "/bg-jester.png", 
     bgMobile: "/bg-jester-mobile.png", 
     image: "/frasco-jester.png", 
     titleImage: "/title-jester.png",
-    legend: "En las cortes medievales, solo el bufón podía decirle la verdad al rey sin perder la cabeza. Su locura era su máscara y su astucia, su verdadero poder. Quien camina la senda del bufón no mendiga oportunidades; Surgat en este Oleoum ayuda abrir las puertas de lugares donde quieres entrar, metafóricamente hablando."
+    legend: "En las cortes medievales, solo el bufón podía decirle la verdad al rey sin perder la cabeza. Su locura era su máscara y su astucia, su verdadero poder. Quien camina la senda del bufón no mendiga oportunidades; Surgat en este Oleum ayuda a abrir las puertas de lugares donde quieres entrar, metafóricamente hablando."
   },
   { 
     id: "leprechaun", 
     name: "Leprechaun's Hoard", 
     spirit: "Frutimiere", 
-    category: "OLEOUM DE ABUNDANCIA", 
+    category: "OLEUM DE ABUNDANCIA", 
     color: "#10b981",
     bg: "/bg-leprechaun.png", 
     bgMobile: "/bg-leprechaun-mobile.png", 
@@ -39,20 +42,20 @@ const OLEUMS_DATA = [
   { 
     id: "pope", 
     name: "Pope's Decree", 
-    spirit: "Huictigaras", 
-    category: "OLEOUM DE DOMINACIÓN", 
+    spirit: "Clisthert", 
+    category: "OLEUM DE DOMINACIÓN", 
     color: "#a855f7",
     bg: "/bg-pope.png", 
     bgMobile: "/bg-pope-mobile.png", 
     image: "/frasco-pope.png", 
     titleImage: "/title-pope.png",
-    legend: "El Papa en la Edad Media no gobernaba con ejércitos, sino con la autoridad divina de su palabra. El verdadero control comienza en la mente del otro. Huictigaras logra influir en los pensamientos y sentimientos ajenos en cualquier ámbito que puedas imaginar."
+    legend: "El Papa en la Edad Media no gobernaba con ejércitos, sino con la autoridad divina de su palabra. El verdadero control comienza en la mente del otro. Clisthert logra influir en los pensamientos y sentimientos ajenos en cualquier ámbito que puedas imaginar."
   },
   { 
     id: "witch", 
     name: "Witch's Glamour", 
     spirit: "Frimost", 
-    category: "OLEOUM DE LUJURIA", 
+    category: "OLEUM DE LUJURIA", 
     color: "#86efac",
     bg: "/bg-witch.png", 
     bgMobile: "/bg-witch-mobile.png", 
@@ -64,7 +67,7 @@ const OLEUMS_DATA = [
     id: "king", 
     name: "King's Vault", 
     spirit: "Clauneck", 
-    category: "OLEOUM DE PROSPERIDAD", 
+    category: "OLEUM DE PROSPERIDAD", 
     color: "#eab308",
     bg: "/bg-king.png", 
     bgMobile: "/bg-king-mobile.png", 
@@ -76,7 +79,7 @@ const OLEUMS_DATA = [
     id: "danse", 
     name: "Danse Macabre", 
     spirit: "Guland", 
-    category: "OLEOUM FUNESTO", 
+    category: "OLEUM FUNESTO", 
     color: "#e2e8f0",
     bg: "/bg-danse.png", 
     bgMobile: "/bg-danse-mobile.png", 
@@ -93,6 +96,7 @@ export default function OleumsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [fade, setFade] = useState(false);
+
   // Swipe táctil en móvil
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartY, setTouchStartY] = useState(0);
@@ -118,22 +122,22 @@ export default function OleumsPage() {
       setFade(false);
     }, 280);
   };
-  
+
   const nextOleum = () => changeOleum(idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
   const prevOleum = () => changeOleum(idx === 0 ? OLEUMS_DATA.length - 1 : idx - 1);
-  
+
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.targetTouches[0].clientX);
     setTouchStartY(e.targetTouches[0].clientY);
     setTouchEndX(e.targetTouches[0].clientX);
     setTouchEndY(e.targetTouches[0].clientY);
   };
-  
+
   const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEndX(e.targetTouches[0].clientX);
     setTouchEndY(e.targetTouches[0].clientY);
   };
-  
+
   const handleTouchEnd = () => {
     const distanceX = touchStartX - touchEndX;
     const distanceY = touchStartY - touchEndY;
@@ -141,10 +145,16 @@ export default function OleumsPage() {
     if (distanceX > 50) nextOleum();
     if (distanceX < -50) prevOleum();
   };
-  
+
   const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !termsAccepted) return;
+
+    if (!EMAIL_REGEX.test(email)) {
+        alert("Por favor, ingresa un formato de correo electrónico válido.");
+        return;
+    }
+
     setIsSubmitting(true);
     try {
       // WEBHOOK SEGURO EN EL SERVIDOR:
@@ -195,6 +205,14 @@ export default function OleumsPage() {
         .anim-smoke {
           animation: smoke-float 8s ease-in-out infinite alternate;
         }
+        /* Ocultar barra de scroll para el carrusel horizontal */
+        .hide-scroll-bar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hide-scroll-bar::-webkit-scrollbar {
+          display: none;
+        }
       `}</style>
 
       {/* ========================================== */}
@@ -236,6 +254,7 @@ export default function OleumsPage() {
 
       {/* CONTENIDO PRINCIPAL */}
       <div className="relative z-10 w-full max-w-5xl flex flex-col min-h-screen px-6 py-6 items-center">
+        
         {/* HEADER */}
         <header className="w-full flex items-center justify-between mb-8">
           <Link
@@ -265,7 +284,6 @@ export default function OleumsPage() {
 
         {/* TÍTULO PRINCIPAL CON HUMO VERDE RADIAL (SIN BORDES CUADRADOS) */}
         <div className="relative w-full max-w-2xl flex justify-center items-center mb-6 py-4">
-          {/* Capas de humo compuestas 100% por gradientes radiales esféricos */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10">
             <div 
               className="anim-smoke absolute w-[380px] md:w-[550px] h-[160px] md:h-[220px]"
@@ -296,12 +314,12 @@ export default function OleumsPage() {
         {/* DEFINICIÓN */}
         <div className="w-full max-w-2xl text-center mb-10 px-4">
           <p className="font-celtic-clean text-sm md:text-base text-gray-300 leading-relaxed tracking-wide bg-black/50 border border-white/10 backdrop-blur-md p-5 rounded-xl shadow-lg">
-            "{DEFINICION_OLEOUMS}"
+            "{DEFINICION_OLEUMS}"
           </p>
         </div>
 
         {/* ========================================== */}
-        {/* CARRUSEL INMERSIVO */}
+        {/* CARRUSEL INMERSIVO DE FRASCOS */}
         {/* ========================================== */}
         <div
           className="flex flex-col items-center justify-center w-full relative mb-10"
@@ -402,6 +420,59 @@ export default function OleumsPage() {
           </div>
         </div>
 
+        {/* ========================================== */}
+        {/* SECCIÓN DE GRIMORIOS (UX/UI MEJORADA)      */}
+        {/* ========================================== */}
+        <div 
+          className={`w-full max-w-5xl mx-auto flex flex-col items-center z-20 mb-20 transition-opacity duration-300 ${
+            fade ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <h3 className="text-2xl font-cinzel text-gray-200 mb-2 drop-shadow-md">Grimorios de Expansión</h3>
+          <p className="text-sm text-gray-400 font-sans mb-10 text-center max-w-xl px-4 leading-relaxed">
+            Al adquirir este Oleum, obtendrás el primer volumen de regalo. Los grimorios avanzados de {current.spirit} estarán disponibles para desbloquear.
+          </p>
+
+          {/* Grid responsivo: scroll horizontal en móvil, 3 columnas en PC */}
+          <div className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-8 px-4 md:px-0 pb-6">
+            {[1, 2, 3].map((nivel) => (
+              <div key={nivel} className="min-w-[220px] md:min-w-0 snap-center flex flex-col items-center group relative">
+                
+                {/* Resplandor tenue del color del oleum */}
+                <div
+                  className="absolute inset-0 scale-[1.15] pointer-events-none transition-all duration-700 opacity-40 group-hover:opacity-70 rounded-xl"
+                  style={{
+                    background: `radial-gradient(circle at 50% 50%, ${current.color}45 0%, transparent 65%)`,
+                  }}
+                />
+                
+                {/* Etiqueta dinámica: Regalo vs Precio */}
+                <div
+                  className="absolute -top-3 z-30 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg border border-white/20 transition-transform duration-300 group-hover:-translate-y-1"
+                  style={{ 
+                    backgroundColor: nivel === 1 ? current.color : "#111827", 
+                    color: nivel === 1 ? "#000" : "#d1d5db" 
+                  }}
+                >
+                  {nivel === 1 ? "De Regalo" : `Nivel ${nivel} (Premium)`}
+                </div>
+                
+                {/* Portada del Grimorio */}
+                <div className="relative w-full aspect-[2/3] max-w-[220px] border border-white/10 rounded-lg overflow-hidden bg-black/80 z-20 shadow-[0_15px_30px_rgba(0,0,0,0.8)]">
+                  <Image
+                    src={`/grimorio-${current.id}-${nivel}.png`}
+                    alt={`Grimorio Nivel ${nivel} - ${current.name}`}
+                    fill
+                    sizes="(max-width: 768px) 220px, 280px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* FORMULARIO DE CAPTURA CON CHECKBOX */}
         <div className="w-full max-w-xl mx-auto mb-14 z-20">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col items-center backdrop-blur-xl shadow-lg">
@@ -471,7 +542,6 @@ export default function OleumsPage() {
               Tienda Principal
             </Link>
           </div>
-
           <a
             href="https://www.instagram.com/praxis.magick?igsh=MWRucmEwNmwyejQxMA==&igsi=MWRucmEwNmwyejQxMA=="
             target="_blank"
