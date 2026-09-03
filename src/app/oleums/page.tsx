@@ -435,10 +435,9 @@ export default function OleumsPage() {
           </p>
 
           {/* Grid responsivo: scroll horizontal en móvil, 3 columnas en PC */}
-          {/* Se agrega touchAction: 'pan-y' para que el usuario no se atore al bajar */}
+          {/* Se elimina explícitamente el style pan-y para permitir el deslizamiento lateral (swipe) */}
           <div 
             className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-8 px-4 md:px-0 pb-10 pt-4"
-            style={{ touchAction: 'pan-y' }}
           >
             {[1, 2, 3].map((nivel) => (
               <div key={nivel} className="min-w-[260px] md:min-w-0 snap-center flex flex-col items-center group relative mt-4">

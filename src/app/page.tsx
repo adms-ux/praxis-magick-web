@@ -241,14 +241,17 @@ export default function Home() {
         }),
       });
       
-      // Asignar el enlace desde Supabase según el idioma
-      const url = freeTrialLanguage === "es" 
-        ? "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf#view=FitH" 
-        : "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-sample-en.pdf#view=FitH";
+      // Enlace crudo de Supabase
+      const baseUrl = freeTrialLanguage === "es" 
+        ? "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf" 
+        : "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-sample-en.pdf";
       
-      setPdfUrlToView(url);
+      // TRUCO: Envolvemos la URL en el visor de Google para forzar renderizado en celulares
+      const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`;
+      
+      setPdfUrlToView(viewerUrl);
       setShowFreeTrialModal(false);
-      setShowPdfModal(true); // Abrimos la ventana del PDF
+      setShowPdfModal(true);
       setFreeTrialEmail("");
     } catch (error) {
       alert("Hubo un error de conexión, por favor intenta de nuevo.");
