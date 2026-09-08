@@ -6,15 +6,6 @@ import PortalRegistro from "./Components/PortalRegistro";
 import CatalogoExpectativa from "./Components/CatalogoExpectativa";
 import { useLegal } from "./Context/LegalContext";
 
-const BANNERS = [
-  "/banner-leprechaun.png",
-  "/banner-pope.png",
-  "/banner-king.png",
-  "/banner-jester.png",
-  "/banner-witch.png",
-  "/banner-danse.png"
-];
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Home() {
@@ -38,7 +29,6 @@ export default function Home() {
 
   const [pdfUrlToView, setPdfUrlToView] = useState("");
   const [rawPdfUrl, setRawPdfUrl] = useState(""); 
-  const [currentBannerIdx, setCurrentBannerIdx] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -57,13 +47,6 @@ export default function Home() {
       } else clearInterval(interval);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const bannerInterval = setInterval(() => {
-      setCurrentBannerIdx((prev) => (prev + 1) % BANNERS.length);
-    }, 4000);
-    return () => clearInterval(bannerInterval);
   }, []);
 
   useEffect(() => {
@@ -249,7 +232,6 @@ export default function Home() {
         .font-serif-classic { font-family: 'Times New Roman', Times, serif; }
       `}</style>
       
-      {/* AMBIENTE DE FONDO */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.22),rgba(0,0,0,0.98))]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.3),transparent_75%)]" />
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none w-full h-full" />
@@ -272,14 +254,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* CABECERA (HERO) */}
-      <div className="relative z-10 flex flex-col items-center text-center px-6 w-full max-w-5xl pt-24 pb-20">
+      <div className="relative z-10 flex flex-col items-center text-center px-4 md:px-6 w-full max-w-5xl pt-24 pb-20">
         <div className="w-28 h-28 md:w-36 md:h-36 mb-6 rounded-full border border-purple-500/30 bg-black/50 backdrop-blur-md flex items-center justify-center shadow-[0_0_25px_rgba(168,85,247,0.25)] overflow-hidden p-2">
           <Image src="/logo.png" alt="Logo Praxis Magick" width={140} height={140} className="object-contain w-full h-full" priority />
         </div>
         
-        {/* SUBTÍTULO MODIFICADO: Solo "Tienda de productos esotéricos" */}
-        <h1 className="text-xl md:text-2xl font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 tracking-[0.2em] uppercase mb-10 drop-shadow-md">
+        {/* CORRECCIÓN: Texto adaptativo y ajustado para móvil sin romperse */}
+        <h1 className="text-base md:text-2xl font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 tracking-[0.15em] md:tracking-[0.2em] uppercase mb-10 drop-shadow-md whitespace-normal px-2">
           Tienda de Productos Esotéricos
         </h1>
 
@@ -301,7 +282,6 @@ export default function Home() {
           </a>
         </div>
 
-        {/* SECCIÓN LIBRO */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-left mb-20 items-center">
           <div className="flex justify-center order-2 md:order-1">
             <div className="w-64 h-96 border border-green-500/30 bg-black/70 flex items-center justify-center shadow-[0_0_35px_rgba(21,128,61,0.35)] transform transition-transform hover:scale-105 duration-500 rounded-sm overflow-hidden">
@@ -354,7 +334,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTONES PREVENTA Y PRUEBA GRATIS */}
         <div className="flex flex-col sm:flex-row gap-6 w-full justify-center items-center mb-10">
           <button 
             onClick={() => setShowCheckoutModal(true)}
@@ -377,38 +356,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* CARRUSEL DE BANNERS OLEUMS */}
-        <div className="w-full max-w-4xl my-24 relative flex flex-col items-center">
-          <Link href="/oleums" className="w-full relative block group">
-            <div className="w-full h-48 md:h-72 relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-[0_0_40px_rgba(168,85,247,0.2)] group-hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] transition-all duration-500 bg-black/60">
-              {BANNERS.map((src, idx) => (
-                <Image 
-                  key={src}
-                  src={src} 
-                  alt={`Arquetipo Oleum ${idx}`} 
-                  fill 
-                  style={{ objectFit: "cover" }}
-                  className={`transition-opacity duration-1000 ease-in-out ${
-                    currentBannerIdx === idx ? "opacity-60 group-hover:opacity-100" : "opacity-0"
-                  }`} 
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                />
-              ))}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end items-center pb-8 px-4 text-center">
-                <span className="text-[10px] md:text-xs tracking-[0.3em] font-medieval text-green-300 uppercase mb-2">Próximo Lanzamiento</span>
-                <h3 className="text-2xl md:text-4xl font-cinzel text-purple-200 drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] mb-5">
-                  Línea de Oleums Ceremoniales
-                </h3>
-                <span className="px-6 py-2.5 md:py-3 bg-purple-900/80 border border-purple-500/50 text-white font-medieval text-sm rounded-lg group-hover:bg-purple-700 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-                  Explorar la Colección →
-                </span>
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* INSTRUCCIONES DE COMPRA */}
-        <div id="instrucciones" className="w-full max-w-3xl text-left border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md p-8 mb-20 shadow-xl">
+        <div id="instrucciones" className="w-full max-w-3xl text-left border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md p-8 mb-20 shadow-xl mt-16">
           <h3 className="text-2xl font-cinzel text-green-300 mb-6 text-center">Instrucciones de Compra y Entrega</h3>
           <div className="space-y-4 font-medieval text-gray-300">
             <div className="flex items-start gap-4">
@@ -432,7 +380,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* PREGUNTAS FRECUENTES (GENERALES) */}
         <div id="faq" className="w-full max-w-3xl text-left mb-16">
           <h3 className="text-3xl font-cinzel text-purple-300 mb-8 text-center">Preguntas Frecuentes</h3>
           <div className="space-y-4 font-medieval">
@@ -473,11 +420,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* BLOQUES FINALES: PORTAL REGISTRO Y CATÁLOGO */}
       <PortalRegistro/>
       <CatalogoExpectativa/>
 
-      {/* FOOTER */}
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
           <div className="flex items-center gap-4 text-gray-400 text-sm">
@@ -505,7 +450,6 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* MODAL CHECKOUT */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(34,197,94,0.3)] font-medieval text-gray-200">
@@ -526,15 +470,15 @@ export default function Home() {
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1.5">Idioma del e-book:</label>
               <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setCheckoutLanguage("es")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${checkoutLanguage === "es" ? "bg-green-900/60 border-green-400 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}><span>🇪🇸</span> Español</button>
-                <button type="button" onClick={() => setCheckoutLanguage("en")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${checkoutLanguage === "en" ? "bg-green-900/60 border-green-400 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}><span>🇺🇸</span> English</button>
+                <button type="button" onClick={() => setCheckoutLanguage("es")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${checkoutLanguage === "es" ? "bg-green-900/60 border-green-400 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}> Español</button>
+                <button type="button" onClick={() => setCheckoutLanguage("en")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${checkoutLanguage === "en" ? "bg-green-900/60 border-green-400 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}> English</button>
               </div>
             </div>
             <div className="mb-4">
               <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
               <input type="email" required placeholder="tu@email.com" value={checkoutEmail} onChange={(e) => setCheckoutEmail(e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-400 font-sans text-sm" />
               <p className="mt-2 text-xs text-green-200/70 italic leading-snug">
-                * Al procesar tu pago, Stripe generará tu recibo. Tu acceso oficial se enviará a este correo electrónico. (Tip: La magia a veces se desvía, revisa tu carpeta de Spam o Correo No Deseado).
+                * Al procesar tu pago, Stripe generará tu recibo. Tu acceso oficial se enviará a este correo electrónico.
               </p>
             </div>
             <div className="mb-6 text-xs text-gray-300">
@@ -550,7 +494,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL PRUEBA GRATUITA */}
       {showFreeTrialModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-md bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-200">
@@ -563,8 +506,8 @@ export default function Home() {
               <div>
                 <label className="block text-xs text-purple-300 mb-1.5">Idioma deseado:</label>
                 <div className="grid grid-cols-2 gap-3">
-                  <button type="button" onClick={() => setFreeTrialLanguage("es")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${freeTrialLanguage === "es" ? "bg-purple-900/60 border-purple-400 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}><span>🇪🇸</span> Español</button>
-                  <button type="button" onClick={() => setFreeTrialLanguage("en")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${freeTrialLanguage === "en" ? "bg-purple-900/60 border-purple-400 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}><span>🇺🇸</span> English</button>
+                  <button type="button" onClick={() => setFreeTrialLanguage("es")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${freeTrialLanguage === "es" ? "bg-purple-900/60 border-purple-400 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}> Español</button>
+                  <button type="button" onClick={() => setFreeTrialLanguage("en")} className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${freeTrialLanguage === "en" ? "bg-purple-900/60 border-purple-400 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.4)]" : "bg-white/5 border-white/10 text-gray-400 hover:border-gray-500"}`}> English</button>
                 </div>
               </div>
               <div>
@@ -582,7 +525,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL VISOR DE PDF */}
       {showPdfModal && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-2 md:p-4 bg-black/95 backdrop-blur-md">
           <div className="relative w-full h-full max-h-[90vh] max-w-4xl bg-black border border-purple-500/40 rounded-xl overflow-hidden flex flex-col shadow-[0_0_40px_rgba(168,85,247,0.5)]">
@@ -608,7 +550,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL: PREGUNTAS DEL EBOOK */}
       {showEbookFaqModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-black border border-green-500/40 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(34,197,94,0.2)] font-medieval text-gray-200 hide-scroll-bar">

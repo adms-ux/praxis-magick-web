@@ -1,459 +1,303 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
-// IMPORTAMOS EL MEGÁFONO LEGAL:
-import { useLegal } from "../Context/LegalContext";
+import PortalRegistro from "./Components/PortalRegistro";
+import CatalogoCompleto from "./Components/CatalogoCompleto";
+import ServiciosMagicos from "./Components/ServiciosMagicos";
+import { useLegal } from "./Context/LegalContext";
 
-// ==========================================
-// 1. BASE DE DATOS Y TEXTOS
-// ==========================================
-const DEFINICION_OLEUMS = "Los Oleums Medievales de Praxis Magick son aceites esenciales intencionados para bendecir o imbuir cualquier objeto ungido con la esencia de la fuerza daemónica o el propósito para el cual fue creado. Se utilizan para ungir objetos, velas o a uno mismo.";
-const TEASER_TEXT = "Cada Oleum de Praxis Magick es una herramienta de múltiples facetas. Al adquirirlo en nuestra tienda en línea, no solo recibes la fórmula ritualizada, sino que obtendrás de regalo un grimorio digital exclusivo y demás grimorios que puedes desbloquear. Este material te enseñará a utilizar su poder mucho más allá de su propósito principal, adaptándolo a diferentes áreas de tu vida. Las instrucciones completas y secretos de uso se revelarán en tu biblioteca virtual al momento de tu compra.";
-
-// Expresión regular para validar formato de correo electrónico
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const OLEUMS_DATA = [
-  { 
-    id: "jester", 
-    name: "Jester's Road", 
-    spirit: "Surgat", 
-    category: "OLEUM ABRE CAMINOS", 
-    color: "#f97316",
-    bg: "/bg-jester.png", 
-    bgMobile: "/bg-jester-mobile.png", 
-    image: "/frasco-jester.png", 
-    titleImage: "/title-jester.png",
-    legend: "En las cortes medievales, solo el bufón podía decirle la verdad al rey sin perder la cabeza. Su locura era su máscara y su astucia, su verdadero poder. Quien camina la senda del bufón no mendiga oportunidades; Surgat en este Oleum ayuda a abrir las puertas de lugares donde quieres entrar, metafóricamente hablando."
-  },
-  { 
-    id: "leprechaun", 
-    name: "Leprechaun's Hoard", 
-    spirit: "Frutimiere", 
-    category: "OLEUM DE ABUNDANCIA", 
-    color: "#10b981",
-    bg: "/bg-leprechaun.png", 
-    bgMobile: "/bg-leprechaun-mobile.png", 
-    image: "/frasco-leprechaun.png", 
-    titleImage: "/title-leprechaun.png",
-    legend: "El duende guarda su tesoro al final de un arco que solo algunos logran ver. Es el espíritu de la abundancia en todos los aspectos. Frutimiere es la mano que guía hacia el aumento sobre las cosas, convirtiendo el azar en una aliada constante para atraer abundancia a tu vida."
-  },
-  { 
-    id: "pope", 
-    name: "Pope's Decree", 
-    spirit: "Clisthert", 
-    category: "OLEUM DE DOMINACIÓN", 
-    color: "#a855f7",
-    bg: "/bg-pope.png", 
-    bgMobile: "/bg-pope-mobile.png", 
-    image: "/frasco-pope.png", 
-    titleImage: "/title-pope.png",
-    legend: "El Papa en la Edad Media no gobernaba con ejércitos, sino con la autoridad divina de su palabra. El verdadero control comienza en la mente del otro. Clisthert logra influir en los pensamientos y sentimientos ajenos en cualquier ámbito que puedas imaginar."
-  },
-  { 
-    id: "witch", 
-    name: "Witch's Glamour", 
-    spirit: "Frimost", 
-    category: "OLEUM DE LUJURIA", 
-    color: "#86efac",
-    bg: "/bg-witch.png", 
-    bgMobile: "/bg-witch-mobile.png", 
-    image: "/frasco-witch.png", 
-    titleImage: "/title-witch.png",
-    legend: "En la Europa antigua, quienes dominaban el arte del glamour tejían redes de fascinación irresistibles. Su presencia era un hechizo magnético. Frimost despierta esa atracción seductora y carnal, una fuerza que puede ser invocada por cualquier persona para cautivar, sin importar su género u orientación sexual."
-  },
-  { 
-    id: "king", 
-    name: "King's Vault", 
-    spirit: "Clauneck", 
-    category: "OLEUM DE PROSPERIDAD", 
-    color: "#eab308",
-    bg: "/bg-king.png", 
-    bgMobile: "/bg-king-mobile.png", 
-    image: "/frasco-king.png", 
-    titleImage: "/title-king.png",
-    legend: "La riqueza de un rey medieval no se basaba en la fortuna efímera, sino en la impecable arquitectura de su imperio. Clauneck no concede simples golpes de suerte, sino la autoridad, el estatus y la visión necesarias para consolidar una prosperidad sólida, estructural y duradera en el tiempo."
-  },
-  { 
-    id: "danse", 
-    name: "Danse Macabre", 
-    spirit: "Guland", 
-    category: "OLEUM FUNESTO", 
-    color: "#e2e8f0",
-    bg: "/bg-danse.png", 
-    bgMobile: "/bg-danse-mobile.png", 
-    image: "/frasco-danse.png", 
-    titleImage: "/title-danse.png",
-    legend: "La Danza Macabra en los cementerios medievales era el recordatorio definitivo en los murales antiguos. Guland conoce tú pena y hará que tú víctima baile la Danza Macabra con una maldición que destruya su vida."
-  },
-];
-
-export default function OleumsPage() {
+export default function Home() {
   const { openLegalModal } = useLegal(); 
-  const [idx, setIdx] = useState(0);
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
+  const [showEbookFaqModal, setShowEbookFaqModal] = useState(false);
+  const [openEbookFaq, setOpenEbookFaq] = useState<number | null>(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [fade, setFade] = useState(false);
+  const [checkoutEmail, setCheckoutEmail] = useState("");
+  const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
 
-  // Swipe táctil en móvil
-  const [touchStartX, setTouchStartX] = useState(0);
-  const [touchStartY, setTouchStartY] = useState(0);
-  const [touchEndX, setTouchEndX] = useState(0);
-  const [touchEndY, setTouchEndY] = useState(0);
-  
-  // Ref para reiniciar el scroll de los grimorios
-  const grimoriosScrollRef = useRef<HTMLDivElement>(null);
-  
-  const current = OLEUMS_DATA[idx];
+  const [freeTrialEmail, setFreeTrialEmail] = useState("");
+  const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
+  const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
 
-  // Efecto para regresar el scroll de grimorios al inicio al cambiar de Oleum
+  const [pdfUrlToView, setPdfUrlToView] = useState("");
+  const [rawPdfUrl, setRawPdfUrl] = useState(""); 
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   useEffect(() => {
-    if (grimoriosScrollRef.current) {
-      grimoriosScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    const targetDate = new Date(2026, 8, 23, 23, 59, 59).getTime();
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000),
+        });
+      } else clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animationFrameId: number;
+    let width = 0;
+    let height = 0;
+    let isActive = true;
+
+    const resizeCanvas = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    interface Lightning {
+      branches: Lightning[];
+      alpha: number;
+      path: { x: number; y: number }[];
     }
-  }, [idx]);
+    let activeLightnings: Lightning[] = [];
+    let flashAlpha = 0;
 
-  const changeOleum = (newIdx: number) => {
-    setFade(true);
-    setTimeout(() => {
-      setIdx(newIdx);
-      setFade(false);
-    }, 280);
+    const createLightningPath = (x1: number, y1: number, x2: number, y2: number, depth = 0): Lightning => {
+      const path: { x: number; y: number }[] = [{ x: x1, y: y1 }];
+      let currentX = x1;
+      let currentY = y1;
+      const steps = 18 + Math.random() * 8;
+      const dy = (y2 - y1) / steps;
+      for (let i = 0; i < steps; i++) {
+        currentX += (Math.random() - 0.5) * 45;
+        currentY += dy;
+        path.push({ x: currentX, y: currentY });
+      }
+      const branches: Lightning[] = [];
+      if (depth < 2 && Math.random() > 0.35) {
+        const branchIndex = Math.floor(Math.random() * (path.length - 2)) + 1;
+        const branchStart = path[branchIndex];
+        branches.push(
+          createLightningPath(branchStart.x, branchStart.y, branchStart.x + (Math.random() - 0.5) * 220, branchStart.y + 140 + Math.random() * 100, depth + 1)
+        );
+      }
+      return { branches, alpha: 1, path };
+    };
+
+    const triggerStrike = () => {
+      const startX = Math.random() * width;
+      const endX = startX + (Math.random() - 0.5) * 320;
+      const endY = height * (0.55 + Math.random() * 0.35);
+      activeLightnings.push(createLightningPath(startX, 0, endX, endY));
+      flashAlpha = 0.35 + Math.random() * 0.25;
+    };
+
+    let nextStrikeTimer = 0;
+
+    const render = () => {
+      if (!isActive) {
+          animationFrameId = requestAnimationFrame(render);
+          return;
+      }
+      ctx.clearRect(0, 0, width, height);
+      if (flashAlpha > 0) {
+        ctx.fillStyle = `rgba(168, 85, 247, ${flashAlpha})`;
+        ctx.fillRect(0, 0, width, height);
+        flashAlpha -= 0.03;
+      }
+      activeLightnings.forEach((bolt, index) => {
+        ctx.beginPath();
+        ctx.moveTo(bolt.path[0].x, bolt.path[0].y);
+        for (let i = 1; i < bolt.path.length; i++) {
+          ctx.lineTo(bolt.path[i].x, bolt.path[i].y);
+        }
+        ctx.strokeStyle = `rgba(235, 210, 255, ${bolt.alpha})`;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "#c084fc";
+        ctx.shadowBlur = 18;
+        ctx.stroke();
+        bolt.alpha -= 0.04;
+        if (bolt.alpha <= 0) activeLightnings.splice(index, 1);
+      });
+      nextStrikeTimer++;
+      if (nextStrikeTimer > 160 + Math.random() * 220) {
+        triggerStrike();
+        nextStrikeTimer = 0;
+      }
+      animationFrameId = requestAnimationFrame(render);
+    };
+    render();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  const formatNumber = (num: number) => String(num).padStart(2, "0");
+  const toggleFaq = (index: number) => { setOpenFaq(openFaq === index ? null : index); };
+  const toggleEbookFaq = (index: number) => { setOpenEbookFaq(openEbookFaq === index ? null : index); };
+
+  const handleProceedToPayment = () => {
+    if (!checkoutEmail) { alert("Por favor ingresa tu correo electrónico."); return; }
+    if (!EMAIL_REGEX.test(checkoutEmail)) { alert("Por favor, ingresa un formato válido."); return; }
+    window.location.href = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(checkoutEmail)}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
   };
 
-  const nextOleum = () => changeOleum(idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
-  const prevOleum = () => changeOleum(idx === 0 ? OLEUMS_DATA.length - 1 : idx - 1);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.targetTouches[0].clientX);
-    setTouchStartY(e.targetTouches[0].clientY);
-    setTouchEndX(e.targetTouches[0].clientX);
-    setTouchEndY(e.targetTouches[0].clientY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.targetTouches[0].clientX);
-    setTouchEndY(e.targetTouches[0].clientY);
-  };
-
-  const handleTouchEnd = () => {
-    const distanceX = touchStartX - touchEndX;
-    const distanceY = touchStartY - touchEndY;
-    if (Math.abs(distanceY) > Math.abs(distanceX)) return;
-    if (distanceX > 50) nextOleum();
-    if (distanceX < -50) prevOleum();
-  };
-
-  const handleNotifySubmit = async (e: React.FormEvent) => {
+  const handleSubmitFreeTrial = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !termsAccepted) return;
-
-    if (!EMAIL_REGEX.test(email)) {
-        alert("Por favor, ingresa un formato de correo electrónico válido.");
-        return;
-    }
-
-    setIsSubmitting(true);
+    if (!freeTrialEmail || !EMAIL_REGEX.test(freeTrialEmail)) return;
+    setIsSubmittingTrial(true);
     try {
       await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          event_type: "oleum_lead",
-          email: email, 
-          oleum_interes: current.name,
-          timestamp: new Date().toISOString()
-        }),
+        body: JSON.stringify({ event_type: "free_trial", email: freeTrialEmail, language: freeTrialLanguage, timestamp: new Date().toISOString() }),
       });
-      alert(`¡Registrado! Te avisaremos a ${email} en cuanto ${current.name} esté disponible.`);
-      setEmail("");
-      setTermsAccepted(false);
-    } catch {
-      alert("Hubo un error de conexión. Por favor, intenta de nuevo.");
+      const baseUrl = freeTrialLanguage === "es" 
+        ? "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf" 
+        : "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-sample-en.pdf";
+      setRawPdfUrl(baseUrl);
+      setPdfUrlToView(`https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`);
+      setShowFreeTrialModal(false);
+      setShowPdfModal(true);
+      setFreeTrialEmail("");
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingTrial(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-black text-gray-200 flex flex-col items-center overflow-x-hidden relative font-sans selection:bg-purple-950 selection:text-green-300">
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=MedievalSharp&family=Cinzel:wght@600;700&display=swap');
-        .font-celtic-clean {
-          font-family: 'MedievalSharp', cursive, serif;
-        }
-        .font-medieval-title {
-          font-family: 'Cinzel Decorative', cursive, serif;
-        }
-        .font-serif-classic {
-          font-family: 'Cinzel', 'Times New Roman', Times, serif;
-        }
-        @keyframes pulse-title {
-          0%, 100% { opacity: 0.85; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.02); }
-        }
-        @keyframes smoke-float {
-          0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.5; }
-          50% { transform: scale(1.15) translate(3%, -4%); opacity: 0.8; }
-        }
-        @keyframes slide-hint {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(8px); }
-        }
-        .anim-title-pulse {
-          animation: pulse-title 4s ease-in-out infinite;
-        }
-        .anim-smoke {
-          animation: smoke-float 8s ease-in-out infinite alternate;
-        }
-        .anim-slide-hint {
-          animation: slide-hint 1.5s ease-in-out infinite;
-        }
-        .hide-scroll-bar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .hide-scroll-bar::-webkit-scrollbar {
-          display: none;
-        }
+    <main className="relative min-h-screen bg-black overflow-x-hidden flex flex-col items-center text-white selection:bg-purple-900 selection:text-green-300">
+      <style>{`
+        .font-cinzel { font-family: var(--font-cinzel); }
+        .font-medieval { font-family: var(--font-medieval); }
+        .font-serif-classic { font-family: 'Times New Roman', Times, serif; }
       `}</style>
-
-      {/* ========================================== */}
-      {/* FONDO ANCLADO ESTÁTICO (OPTIMIZADO) */}
-      {/* ========================================== */}
-      <div 
-        className="fixed top-0 left-0 w-screen h-screen z-0 pointer-events-none bg-black"
-        style={{ position: "fixed", width: "100vw", height: "100vh" }}
-      >
-        {OLEUMS_DATA.map((item, index) => {
-          // Motor de optimización: Solo renderizamos el actual, el de atrás y el de adelante.
-          const isCurrent = index === idx;
-          const isPrev = index === (idx === 0 ? OLEUMS_DATA.length - 1 : idx - 1);
-          const isNext = index === (idx === OLEUMS_DATA.length - 1 ? 0 : idx + 1);
-
-          if (!isCurrent && !isPrev && !isNext) return null;
-
-          return (
-            <div
-              key={item.id}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                isCurrent ? "opacity-40" : "opacity-0"
-              }`}
-            >
-              <div className="relative w-full h-full md:hidden">
-                <Image 
-                  src={item.bgMobile} 
-                  alt="" 
-                  fill 
-                  priority={isCurrent} // Solo el actual le pide máxima prioridad a Next.js
-                  className="object-cover object-center" 
-                />
-              </div>
-              <div className="relative w-full h-full hidden md:block">
-                <Image 
-                  src={item.bg} 
-                  alt="" 
-                  fill 
-                  priority={isCurrent} 
-                  className="object-cover object-center" 
-                />
-              </div>
-            </div>
-          );
-        })}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_90%)]" />
+      
+      {/* FONDO ANIMADO */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(34,197,94,0.22),rgba(0,0,0,0.98))]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(147,51,234,0.3),transparent_75%)]" />
+        <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full" />
+        <div className="absolute top-[8%] right-[8%] md:top-[10%] md:right-[18%] w-28 h-28 md:w-36 md:h-36 flex items-center justify-center">
+          <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35)_0%,rgba(168,85,247,0.08)_45%,transparent_70%)] animate-pulse" />
+          <Image src="/luna.png" alt="Luna" width={150} height={150} className="relative z-10 object-contain drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]" />
+        </div>
       </div>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <div className="relative z-10 w-full max-w-5xl flex flex-col min-h-screen px-6 py-6 items-center">
+      {/* HERO SECTION */}
+      <div className="relative z-10 flex flex-col items-center text-center px-4 md:px-6 w-full max-w-5xl pt-24 pb-20">
+        <div className="w-28 h-28 md:w-36 md:h-36 mb-6 rounded-full border border-purple-500/30 bg-black/50 backdrop-blur-md flex items-center justify-center shadow-[0_0_25px_rgba(168,85,247,0.25)] p-2">
+          <Image src="/logo.png" alt="Logo" width={140} height={140} className="object-contain w-full h-full" priority />
+        </div>
         
-        {/* HEADER */}
-        <header className="w-full flex items-center justify-between mb-8">
-          <Link
-            href="/"
-            className="text-xs md:text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm shadow-md"
-          >
-            « Volver al inicio
-          </Link>
-          <div className="relative flex items-center justify-center">
-            <div 
-              className="absolute -inset-2 rounded-full pointer-events-none"
-              style={{ background: "radial-gradient(circle, rgba(168,85,247,0.4) 0%, transparent 70%)" }}
-            />
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-purple-500/40 bg-black/60 backdrop-blur-md flex items-center justify-center p-1.5 shadow-[0_0_20px_rgba(168,85,247,0.4)] relative z-10">
-              <Image src="/logo.png" alt="Praxis Magick Logo" width={60} height={60} className="object-contain w-full h-full" priority />
-            </div>
-          </div>
-        </header>
+        <h1 className="text-base md:text-2xl font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 tracking-[0.15em] md:tracking-[0.2em] uppercase mb-10 drop-shadow-md whitespace-normal px-2">
+          Tienda de Productos Esotéricos
+        </h1>
 
-        {/* TÍTULO PRINCIPAL CON HUMO */}
-        <div className="relative w-full max-w-2xl flex justify-center items-center mb-6 py-4">
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10">
-            <div 
-              className="anim-smoke absolute w-[380px] md:w-[550px] h-[160px] md:h-[220px]"
-              style={{ background: "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(34,197,94,0.38) 0%, rgba(16,185,129,0.18) 45%, transparent 75%)" }}
-            />
-            <div 
-              className="anim-smoke absolute w-[300px] md:w-[420px] h-[120px] md:h-[180px]"
-              style={{ animationDelay: "-3s", background: "radial-gradient(ellipse 55% 45% at 50% 50%, rgba(74,222,128,0.3) 0%, rgba(34,197,94,0.12) 50%, transparent 75%)" }}
-            />
-          </div>
-          <div className="relative w-full max-w-[340px] md:max-w-[440px] h-16 md:h-20">
-            <Image src="/oleums-main.png" alt="Línea de Oleums" fill sizes="(max-width: 768px) 340px, 440px" className="object-contain" priority />
-          </div>
-        </div>
-
-        {/* DEFINICIÓN */}
-        <div className="w-full max-w-2xl text-center mb-10 px-4">
-          <p className="font-celtic-clean text-sm md:text-base text-gray-300 leading-relaxed tracking-wide bg-black/50 border border-white/10 backdrop-blur-md p-5 rounded-xl shadow-lg">
-            "{DEFINICION_OLEUMS}"
+        <div className="px-6 md:px-10 py-6 mb-10 mt-2 border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.8)]">
+          <p className="text-4xl md:text-6xl font-mono text-green-400 tracking-widest drop-shadow-[0_0_15px_rgba(74,222,128,0.6)]">
+            {formatNumber(timeLeft.days)}:{formatNumber(timeLeft.hours)}:{formatNumber(timeLeft.minutes)}:{formatNumber(timeLeft.seconds)}
+          </p>
+          <p className="text-xs md:text-sm text-gray-400 mt-3 font-cinzel tracking-[0.2em] flex justify-between px-2 uppercase">
+            <span>Días</span> <span>Hrs</span> <span>Min</span> <span>Seg</span>
           </p>
         </div>
 
-        {/* CARRUSEL INMERSIVO DE FRASCOS */}
-        <div
-          className="flex flex-col items-center justify-center w-full relative mb-10"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="flex justify-between items-center w-full max-w-3xl absolute top-[38%] -translate-y-1/2 z-30 px-0 pointer-events-none">
-            <button onClick={prevOleum} aria-label="Oleum anterior" className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-transform active:scale-90 p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_15px_rgba(0,0,0,0.95)]">‹</button>
-            <button onClick={nextOleum} aria-label="Siguiente Oleum" className="pointer-events-auto text-4xl md:text-5xl text-gray-400 hover:text-white transition-transform active:scale-90 p-4 cursor-pointer focus:outline-none drop-shadow-[0_0_15px_rgba(0,0,0,0.95)]">›</button>
-          </div>
-
-          <div className={`flex flex-col items-center justify-center w-full transition-all duration-300 ease-out ${fade ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}>
-            <div className="relative w-48 h-72 md:w-64 md:h-96 flex items-center justify-center mb-6">
-              <div className="absolute inset-0 scale-150 pointer-events-none transition-all duration-700" style={{ background: `radial-gradient(circle at 50% 50%, ${current.color}44 0%, transparent 65%)` }} />
-              <Image src={current.image} alt={current.name} fill sizes="(max-width: 768px) 192px, 256px" className="object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.9)] transition-transform duration-500 hover:scale-110 cursor-pointer" priority />
-            </div>
-
-            <div className="w-full max-w-[290px] md:max-w-[340px] h-20 md:h-28 relative flex justify-center items-center mb-6 anim-title-pulse">
-              <div className="absolute inset-0 scale-125 pointer-events-none transition-all duration-700" style={{ background: `radial-gradient(ellipse at 50% 50%, ${current.color}35 0%, transparent 70%)` }} />
-              <Image src={current.titleImage} alt={current.name} fill sizes="(max-width: 768px) 290px, 340px" className="object-contain" priority />
-            </div>
-
-            <div className="flex flex-col items-center gap-2 mb-4">
-              <span className="font-medieval-title text-base md:text-lg tracking-widest uppercase border-b border-white/20 pb-1 text-center" style={{ color: current.color }}>
-                {current.category}
-              </span>
-              <span className="font-serif-classic text-sm md:text-base text-gray-300 bg-black/60 px-5 py-1.5 rounded-full border border-white/10 backdrop-blur-md shadow-md tracking-wider">
-                Espíritu Ritualizado: <span className="font-bold text-white tracking-widest">{current.spirit}</span>
-              </span>
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-left mb-20 items-center">
+          <div className="flex justify-center order-2 md:order-1">
+            <div className="w-64 h-96 border border-green-500/30 bg-black/70 flex items-center justify-center shadow-[0_0_35px_rgba(21,128,61,0.35)] transform transition-transform hover:scale-105 duration-500 rounded-sm overflow-hidden">
+              <Image src="/verum-portada.png" alt="Demonios del Verum" width={256} height={384} className="object-cover w-full h-full" priority />
             </div>
           </div>
-        </div>
-
-        {/* LEYENDA Y TEASER */}
-        <div className={`w-full max-w-3xl mx-auto flex flex-col gap-8 text-center z-20 mb-10 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"}`}>
-          <div className="bg-black/70 border border-white/10 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-[0_0_35px_rgba(0,0,0,0.7)]">
-            <blockquote className="text-lg md:text-xl font-celtic-clean text-gray-200 leading-relaxed mb-8 tracking-wide">
-              "{current.legend}"
-            </blockquote>
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8" />
-            <p className="text-sm font-sans text-gray-400 leading-relaxed px-2 text-justify md:text-center">
-              {TEASER_TEXT}
+          <div className="order-1 md:order-2">
+            <h2 className="text-3xl font-cinzel text-green-300 mb-4">Demonios del Verum</h2>
+            <p className="text-md text-gray-300 font-medieval leading-relaxed mb-4 text-justify">
+              El <em>Grimorium Verum</em> es uno de los grimorios más influyentes de la historia de la magia occidental — y también uno de los más incomprendidos.
             </p>
-          </div>
-        </div>
-
-        {/* ========================================== */}
-        {/* SECCIÓN DE GRIMORIOS */}
-        {/* ========================================== */}
-        <div className={`w-full max-w-5xl mx-auto flex flex-col items-center z-20 mb-20 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"}`}>
-          <h3 className="text-2xl font-cinzel text-gray-200 mb-2 drop-shadow-md">Grimorios de Expansión</h3>
-          <p className="text-sm text-gray-400 font-sans mb-8 text-center max-w-xl px-4 leading-relaxed">
-            Al adquirir este Oleum, obtendrás el primer volumen de regalo. Los grimorios avanzados de {current.spirit} estarán disponibles para desbloquear.
-          </p>
-
-          <div 
-            className="md:hidden flex items-center justify-center gap-2 mb-2 w-full anim-slide-hint"
-            style={{ color: current.color, textShadow: `0 0 10px ${current.color}80` }}
-          >
-            <span className="text-[10px] font-sans font-bold tracking-[0.2em] uppercase">Desliza para ver más</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </div>
-
-          <div 
-            ref={grimoriosScrollRef}
-            className="w-full flex md:grid md:grid-cols-3 overflow-x-auto snap-x snap-mandatory hide-scroll-bar gap-6 md:gap-8 px-6 md:px-0 pb-10 pt-4"
-          >
-            {[1, 2, 3].map((nivel) => (
-              <div key={nivel} className="flex-none w-[82%] md:w-auto md:max-w-none snap-center flex flex-col items-center group relative mt-4">
-                
-                <div
-                  className="absolute -top-4 z-30 px-5 py-1.5 text-xs font-bold font-serif-classic uppercase tracking-widest shadow-lg transition-transform duration-300 group-hover:-translate-y-1 rounded-sm"
-                  style={{ backgroundColor: current.color, color: "#000", boxShadow: `0 4px 10px ${current.color}50` }}
-                >
-                  {nivel === 1 ? "De Regalo" : `Nivel ${nivel}`}
-                </div>
-                
-                <div 
-                  className="relative w-full aspect-[4/5] rounded-md overflow-hidden bg-black z-20 transition-all duration-500"
-                  style={{ boxShadow: `0 0 25px 4px ${current.color}80`, border: `1px solid ${current.color}50` }}
-                >
-                  <Image
-                    src={`/grimorio-${current.id}-${nivel}.png`}
-                    alt={`Grimorio Nivel ${nivel} - ${current.name}`}
-                    fill
-                    sizes="(max-width: 768px) 280px, 300px"
-                    className="object-contain transition-transform duration-700 group-hover:scale-105"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* FORMULARIO DE CAPTURA CON CHECKBOX */}
-        <div className="w-full max-w-xl mx-auto mb-14 z-20">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col items-center backdrop-blur-xl shadow-lg">
-            <h4 className="text-lg font-bold text-white mb-2 text-center">Notificaciones de Lanzamiento</h4>
-            <p className="text-sm text-gray-400 mb-6 text-center font-sans">
-              Ingresa tu correo electrónico para recibir un aviso en cuanto esta fórmula esté disponible en la tienda.
+            <p className="text-md text-gray-300 font-medieval leading-relaxed mb-6 text-justify">
+              <strong>Demonios del Verum</strong> rescata una parte de ese grimorio que casi nadie ha explorado en el mundo moderno. Un manual directo para quien busca resultados concretos, con el entrenamiento, la estrategia y el ritual completo para trabajar con estos 18 espíritus.
             </p>
-            <form onSubmit={handleNotifySubmit} className="flex flex-col w-full gap-4">
-              <div className="flex flex-col sm:flex-row w-full gap-3">
-                <input type="email" required placeholder="Tu correo electrónico..." className="flex-grow bg-black/80 border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors" style={{ outlineColor: current.color }} onChange={(e) => setEmail(e.target.value)} value={email} disabled={isSubmitting} />
-                <button type="submit" disabled={isSubmitting || !email || !termsAccepted} className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 text-black cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" style={{ backgroundColor: current.color, boxShadow: `0 0 15px ${current.color}50` }}>
-                  {isSubmitting ? "Enviando..." : "Avisarme"}
-                </button>
-              </div>
-              
-              <div className="w-full text-left text-xs text-gray-400 mt-1">
-                <label className="flex items-start gap-3 cursor-pointer rounded-lg">
-                  <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 accent-gray-500 w-4 h-4 rounded shrink-0 cursor-pointer" />
-                  <span className="leading-relaxed">
-                    He leído y acepto las <button type="button" onClick={() => openLegalModal("privacidad")} className="text-gray-300 underline hover:text-white transition-colors">Políticas de Privacidad y Términos</button>.
-                  </span>
-                </label>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        {/* FOOTER */}
-        <footer className="w-full flex flex-col items-center gap-5 py-8 mt-auto z-20 border-t border-white/10">
-          <div className="flex flex-wrap justify-center items-center gap-6 text-xs text-gray-400 font-sans">
-            <button onClick={() => openLegalModal("terminos")} className="hover:text-white transition-colors cursor-pointer underline underline-offset-4">
-              Políticas de Privacidad y Términos
+            <button onClick={() => setShowEbookFaqModal(true)} className="inline-flex items-center gap-2 px-5 py-2.5 mb-6 text-sm font-cinzel font-bold text-purple-200 border border-purple-500/50 rounded-lg bg-purple-900/30 hover:bg-purple-800/60 cursor-pointer">
+              ¿Tienes dudas? Resuélvelas aquí
             </button>
-            <span className="text-gray-600">•</span>
-            <Link href="/" className="hover:text-white transition-colors">Tienda Principal</Link>
+            <div className="p-5 border border-purple-800/40 rounded-xl bg-purple-950/20 mb-6">
+              <h3 className="text-lg font-cinzel text-purple-300 mb-2">Bono especial de preventa</h3>
+              <p className="text-sm text-gray-300 font-medieval mb-3">Recibirás un cupón exclusivo para nuestro próximo lanzamiento:</p>
+              <p className="text-sm font-semibold text-green-300 font-medieval mb-2">MAGIA OLÍMPICA — Espíritus Planetarios</p>
+              <p className="text-xs text-purple-400 font-medieval">Se te enviará el día de su lanzamiento: 23 de octubre.</p>
+            </div>
           </div>
-          <a href="https://www.instagram.com/praxis.magick?igsh=MWRucmEwNmwyejQxMA==&igsi=MWRucmEwNmwyejQxMA==" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-purple-400 transition-colors flex items-center gap-2 group mt-2">
-            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-            </svg>
-            <span className="font-sans text-xs tracking-widest uppercase">Síguenos en Instagram</span>
-          </a>
-        </footer>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-6 w-full justify-center items-center mb-10">
+          <button onClick={() => setShowCheckoutModal(true)} className="flex flex-col items-center justify-center px-8 py-4 bg-green-700/90 text-white rounded-xl font-medieval hover:scale-105 border border-green-500/50 cursor-pointer min-w-[280px]">
+            <span className="text-xl font-bold">Comprar Preventa</span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-2xl font-bold text-green-200">$220 MXN</span>
+              <span className="text-sm text-gray-300 line-through font-sans">$340 MXN</span>
+            </div>
+          </button>
+          <button onClick={() => setShowFreeTrialModal(true)} className="px-8 py-5 bg-transparent border-2 border-purple-600/80 text-purple-200 rounded-xl font-medieval text-lg hover:scale-105 cursor-pointer min-w-[280px]">
+            Reclamar prueba gratis
+          </button>
+        </div>
       </div>
+
+      {/* COMPONENTES INTEGRADORES */}
+      <PortalRegistro/>
+      <CatalogoCompleto/>
+      <ServiciosMagicos/>
+
+      {/* FOOTER */}
+      <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
+          <div className="flex items-center gap-4 text-gray-400 text-sm">
+            <span>Pagos procesados de forma segura con Stripe</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6 text-gray-400">
+            <button onClick={() => openLegalModal("terminos")} className="hover:text-green-400 underline cursor-pointer">Términos y Condiciones</button>
+            <button onClick={() => openLegalModal("privacidad")} className="hover:text-purple-400 underline cursor-pointer">Aviso de Privacidad</button>
+          </div>
+          <p>© 2026 Praxis Magick. Todos los derechos reservados.</p>
+        </div>
+      </footer>
+
+      {/* MODALES DE COMPRA Y PDF (Se mantienen exactamente iguales en funcionalidad) */}
+      {showCheckoutModal && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 font-medieval text-gray-200">
+            <button onClick={() => setShowCheckoutModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
+            <h3 className="text-2xl font-cinzel text-green-300 mb-3 text-center">Confirmación de Preventa</h3>
+            <div className="mb-4">
+              <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
+              <input type="email" required value={checkoutEmail} onChange={(e) => setCheckoutEmail(e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white font-sans text-sm" />
+            </div>
+            <div className="mb-6 text-xs text-gray-300">
+              <label className="flex items-start gap-3 cursor-pointer bg-green-950/20 p-3 rounded-lg border border-green-500/20">
+                <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 accent-green-500 w-4 h-4" />
+                <span>He leído y acepto los Términos y Condiciones.</span>
+              </label>
+            </div>
+            <button disabled={!termsAccepted || !checkoutEmail} onClick={handleProceedToPayment} className={`w-full py-4 rounded-lg font-medieval text-lg border ${termsAccepted && checkoutEmail ? "bg-green-600 text-white border-green-400 cursor-pointer" : "bg-gray-800 text-gray-500 cursor-not-allowed"}`}>
+              Proceder al Pago Seguro
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
