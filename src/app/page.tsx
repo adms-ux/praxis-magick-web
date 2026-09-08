@@ -7,10 +7,11 @@ import ChatFlotante from "./Components/ChatFlotante";
 import BotonSubir from "./Components/BotonSubir";
 import { useLegal } from "./Context/LegalContext";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Home() {
   const { openLegalModal } = useLegal(); 
   
-  // Lógica del contador y apertura de tienda
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   
@@ -19,6 +20,22 @@ export default function Home() {
 
   const [showLoginPrompt, setShowLoginPrompt] = useState(false); 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Estados de Modales recuperados
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [checkoutEmail, setCheckoutEmail] = useState("");
+  const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
+
+  const [freeTrialEmail, setFreeTrialEmail] = useState("");
+  const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
+  const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
+
+  const [pdfUrlToView, setPdfUrlToView] = useState("");
+  const [rawPdfUrl, setRawPdfUrl] = useState(""); 
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const heroContainerRef = useRef<HTMLDivElement | null>(null);
@@ -98,7 +115,6 @@ export default function Home() {
       if (!isActive) { animationFrameId = requestAnimationFrame(render); return; }
       ctx.clearRect(0, 0, width, height);
       
-      // RELÁMPAGO VERDE PARA ILUMINAR EL CASTILLO
       if (flashAlpha > 0) {
         ctx.fillStyle = `rgba(34, 197, 94, ${flashAlpha})`; 
         ctx.fillRect(0, 0, width, height);
@@ -130,22 +146,48 @@ export default function Home() {
   const formatNumber = (num: number) => String(num).padStart(2, "0");
   const toggleFaq = (index: number) => { setOpenFaq(openFaq === index ? null : index); };
 
-  const handleBookAction = () => {
-    // Si la tienda ya abrió, requerimos cuenta para ver muestras o comprar
-    if (isStoreOpen) {
+  // ================= FUNCIONES RECUPERADAS Y CORREGIDAS =================
+
+  const handleComprarAction = () => {
+    if (isStoreOpen && !isUserLoggedIn) {
       setShowLoginPrompt(true);
     } else {
-      window.location.href = "https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01";
+      setShowCheckoutModal(true);
     }
   };
 
   const handleMuestraGratis = () => {
-    if (!isUserLoggedIn) {
+    if (isStoreOpen && !isUserLoggedIn) {
       setShowLoginPrompt(true);
     } else {
-      // Lógica futura para mostrar PDF si está logueado
+      setShowFreeTrialModal(true);
     }
   };
+
+  const handleProceedToPayment = () => {
+    if (!checkoutEmail || !EMAIL_REGEX.test(checkoutEmail)) { alert("Ingresa un correo válido."); return; }
+    window.location.href = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(checkoutEmail)}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
+  };
+
+  const handleSubmitFreeTrial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!freeTrialEmail || !EMAIL_REGEX.test(freeTrialEmail)) return;
+    setIsSubmittingTrial(true);
+    try {
+      await fetch("/api/webhook", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event_type: "free_trial", email: freeTrialEmail, language: freeTrialLanguage, timestamp: new Date().toISOString() }),
+      });
+      const baseUrl = freeTrialLanguage === "es" 
+        ? "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf" 
+        : "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-sample-en.pdf";
+      setRawPdfUrl(baseUrl);
+      setPdfUrlToView(`https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`);
+      setShowFreeTrialModal(false); setShowPdfModal(true); setFreeTrialEmail("");
+    } finally { setIsSubmittingTrial(false); }
+  };
+
+  // ======================================================================
 
   return (
     <main className="relative min-h-screen bg-black overflow-x-hidden flex flex-col items-center text-white selection:bg-green-900 selection:text-green-300 pb-10">
@@ -162,17 +204,15 @@ export default function Home() {
       
       <div className="fixed inset-0 pointer-events-none z-0 bg-black bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.10),transparent_80%)]" />
 
-      {/* ================= HERO RECUADRO ================= */}
+      {/* HERO RECUADRO */}
       <div ref={heroContainerRef} className="hero-mask relative w-full md:w-[95%] max-w-6xl mx-auto h-[70vh] min-h-[500px] overflow-hidden mt-16 z-10 flex flex-col items-center justify-center">
         <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full" />
         
-        {/* Luna Verde */}
         <div className="absolute top-[10%] right-[10%] w-24 h-24 md:w-32 md:h-32 z-10 flex items-center justify-center">
           <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.25)_0%,transparent_70%)] animate-pulse" />
           <Image src="/luna.png" alt="Luna" fill className="object-contain drop-shadow-[0_0_15px_rgba(34,197,94,0.7)]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
-        {/* Silueta del Castillo (Frente a los rayos) */}
         <div className="absolute bottom-0 w-full h-[55%] md:h-[70%] z-10 opacity-90 pointer-events-none">
           <Image src="/castillo.png" alt="" fill className="object-cover object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
@@ -181,13 +221,12 @@ export default function Home() {
           <div className="w-32 h-32 md:w-44 md:h-44 mb-2 rounded-full border border-green-500/30 bg-black/60 backdrop-blur-md flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.3)] p-3">
             <Image src="/logo.png" alt="Logo Praxis Magick" width={160} height={160} className="object-contain" priority />
           </div>
-          <h1 className="text-sm md:text-lg font-cinzel text-gray-300 tracking-[0.2em] md:tracking-[0.3em] uppercase drop-shadow-md text-center">
+          <h1 className="text-sm md:text-lg font-cinzel text-gray-300 tracking-[0.2em] md:tracking-[0.3em] uppercase drop-shadow-md text-center bg-black/40 px-6 py-2 rounded-full backdrop-blur-sm border border-white/5">
             Tienda de Productos Esotéricos
           </h1>
         </div>
       </div>
 
-      {/* ================= CONTENIDO PRINCIPAL ================= */}
       <div className="relative z-20 flex flex-col items-center px-4 w-full max-w-5xl -mt-16 pb-10">
         
         <div className="mb-10 w-full flex justify-center">
@@ -241,13 +280,13 @@ export default function Home() {
           <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center border-b border-white/10 pb-4">Preguntas Frecuentes</h3>
           <div className="space-y-2 font-sans text-sm">
             <div className="bg-white/5 rounded-lg">
-              <button onClick={() => toggleFaq(1)} className="w-full p-4 text-left flex justify-between items-center text-gray-300 hover:text-white">
+              <button onClick={() => toggleFaq(1)} className="w-full p-4 text-left flex justify-between items-center text-gray-300 hover:text-white cursor-pointer">
                 ¿Debo crear cuenta para comprar? <span className="text-purple-400">{openFaq === 1 ? "−" : "+"}</span>
               </button>
               {openFaq === 1 && <div className="px-4 pb-4 text-xs text-gray-400 text-justify">Sí. Es obligatorio para que tus ebooks, grimorios e instrucciones de uso se guarden permanentemente en tu Bóveda Digital y protejamos los derechos de distribución.</div>}
             </div>
             <div className="bg-white/5 rounded-lg">
-              <button onClick={() => toggleFaq(2)} className="w-full p-4 text-left flex justify-between items-center text-gray-300 hover:text-white">
+              <button onClick={() => toggleFaq(2)} className="w-full p-4 text-left flex justify-between items-center text-gray-300 hover:text-white cursor-pointer">
                 ¿Hay envíos internacionales? <span className="text-purple-400">{openFaq === 2 ? "−" : "+"}</span>
               </button>
               {openFaq === 2 && <div className="px-4 pb-4 text-xs text-gray-400 text-justify">La biblioteca digital (ebooks y cursos) es global. Los productos físicos (Oleums, Velas, Polvos) solo se envían dentro de México debido a restricciones aduanales botánicas.</div>}
@@ -259,8 +298,8 @@ export default function Home() {
 
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-8 px-6 z-30 text-center font-sans text-[10px] text-gray-500 mt-auto">
         <div className="flex flex-wrap justify-center gap-4 text-gray-400 mb-4">
-          <button onClick={() => openLegalModal("terminos")} className="hover:text-green-400 underline">Términos y Condiciones</button>
-          <button onClick={() => openLegalModal("privacidad")} className="hover:text-purple-400 underline">Aviso de Privacidad</button>
+          <button onClick={() => openLegalModal("terminos")} className="hover:text-green-400 underline cursor-pointer">Términos y Condiciones</button>
+          <button onClick={() => openLegalModal("privacidad")} className="hover:text-purple-400 underline cursor-pointer">Aviso de Privacidad</button>
         </div>
         <p>© 2026 Praxis Magick. Todos los derechos reservados.</p>
       </footer>
@@ -268,16 +307,17 @@ export default function Home() {
       <BotonSubir />
       <ChatFlotante />
 
-      {/* Modal de Aviso para Iniciar Sesión (Sustituye captura de leads post-apertura) */}
+      {/* Modal de Aviso para Iniciar Sesión o Crear Cuenta */}
       {showLoginPrompt && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="relative w-full max-w-sm bg-black border border-green-500/50 rounded-2xl p-6 md:p-8 font-sans text-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
-            <button onClick={() => setShowLoginPrompt(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
+            <button onClick={() => setShowLoginPrompt(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer">✕</button>
             <h3 className="text-xl font-cinzel text-green-300 mb-4">Ingreso Requerido</h3>
             <p className="text-xs text-gray-300 mb-6 leading-relaxed font-medieval">
-              Debes tener una cuenta en el Círculo Interno para leer muestras, acceder a instrucciones, o realizar compras en la tienda.
+              Debes tener una cuenta en el Círculo Interno para leer muestras, acceder a instrucciones o realizar compras en la tienda.
             </p>
             <div className="flex flex-col gap-3">
+              {/* Este botón mandará a la página de registro/login en el futuro */}
               <button className="w-full py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-lg transition-colors text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)] cursor-pointer">
                 Crear cuenta gratuita
               </button>
@@ -289,6 +329,63 @@ export default function Home() {
         </div>
       )}
 
+      {/* MODALES DE FUNCIONALIDAD (Stripe y PDF) */}
+      {showCheckoutModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 font-medieval text-gray-200">
+            <button onClick={() => setShowCheckoutModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer">✕</button>
+            <h3 className="text-2xl font-cinzel text-green-300 mb-3 text-center">Confirmación de Compra</h3>
+            <div className="mb-4">
+              <label className="block text-xs text-green-300 mb-1">Tu Correo Electrónico:</label>
+              <input type="email" required value={checkoutEmail} onChange={(e) => setCheckoutEmail(e.target.value)} className="w-full px-4 py-2.5 bg-white/5 border border-green-500/30 rounded-lg text-white font-sans text-sm outline-none focus:border-green-400" />
+            </div>
+            <div className="mb-6 text-xs text-gray-300">
+              <label className="flex items-start gap-3 cursor-pointer bg-green-950/20 p-3 rounded-lg border border-green-500/20">
+                <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 accent-green-500 w-4 h-4 cursor-pointer" />
+                <span>He leído y acepto los Términos y Condiciones.</span>
+              </label>
+            </div>
+            <button disabled={!termsAccepted || !checkoutEmail} onClick={handleProceedToPayment} className={`w-full py-4 rounded-lg font-medieval text-lg border ${termsAccepted && checkoutEmail ? "bg-green-600 text-white border-green-400 cursor-pointer" : "bg-gray-800 text-gray-500 cursor-not-allowed"}`}>
+              Proceder al Pago Seguro
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showFreeTrialModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-md bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-200">
+            <button onClick={() => setShowFreeTrialModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer">✕</button>
+            <h3 className="text-2xl font-cinzel text-purple-300 mb-2 text-center">Prueba Gratuita</h3>
+            <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
+              <div>
+                <label className="block text-xs text-purple-300 mb-1">Correo electrónico:</label>
+                <input type="email" required value={freeTrialEmail} onChange={(e) => setFreeTrialEmail(e.target.value)} disabled={isSubmittingTrial} className="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white font-sans outline-none focus:border-purple-400" />
+              </div>
+              <button type="submit" disabled={isSubmittingTrial || !freeTrialEmail} className="w-full py-3.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg font-medieval transition-all border border-purple-500/40 cursor-pointer disabled:opacity-50">
+                {isSubmittingTrial ? "Procesando..." : "Ver Muestra Gratis"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showPdfModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 md:p-4 bg-black/95 backdrop-blur-md">
+          <div className="relative w-full h-full max-h-[90vh] max-w-4xl bg-black border border-purple-500/40 rounded-xl overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-3 px-5 bg-purple-950/40 border-b border-purple-500/30 shrink-0">
+              <span className="font-cinzel text-purple-200 text-sm">Demonios del Verum - Muestra</span>
+              <button onClick={() => setShowPdfModal(false)} className="text-gray-300 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
+            </div>
+            <div className="flex-grow w-full h-full bg-white relative overflow-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <iframe src={pdfUrlToView} className="absolute top-0 left-0 w-full h-full border-none" title="Visor PDF" loading="lazy" />
+            </div>
+            <div className="bg-purple-950/80 p-2 text-center">
+              <a href={rawPdfUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-bold font-sans cursor-pointer">Abrir directo</a>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
