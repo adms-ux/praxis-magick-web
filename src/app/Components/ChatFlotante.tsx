@@ -6,7 +6,7 @@ export default function ChatFlotante() {
   const [message, setMessage] = useState("");
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Simulamos si el usuario está logueado o no
+  // Simulamos que el usuario NO está logueado para activar las protecciones
   const isUserLoggedIn = false; 
 
   const handleSend = (e: React.FormEvent) => {
@@ -17,13 +17,11 @@ export default function ChatFlotante() {
       setShowLoginPrompt(true);
       return;
     }
-    // Lógica futura de envío...
     setMessage("");
   };
 
   return (
     <>
-      {/* Botón Flotante */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 z-[150] p-4 bg-green-900/80 border border-green-500/50 text-white rounded-full shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:bg-green-700 transition-all cursor-pointer"
@@ -35,7 +33,6 @@ export default function ChatFlotante() {
         )}
       </button>
 
-      {/* Ventana de Chat */}
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-[90vw] max-w-sm h-[500px] max-h-[70vh] bg-black border border-green-500/40 rounded-2xl shadow-[0_0_40px_rgba(34,197,94,0.2)] z-[150] flex flex-col overflow-hidden font-sans">
           
@@ -51,18 +48,23 @@ export default function ChatFlotante() {
 
           <div className="flex-grow p-4 overflow-y-auto space-y-4">
             <div className="bg-white/5 border border-white/10 rounded-xl rounded-tl-none p-3 text-xs text-gray-300 leading-relaxed w-[85%] text-justify">
-              Bienvenido a Praxis Magick. Este canal es exclusivo para soporte técnico de tu Bóveda Digital, seguimiento de envíos y orientación para la contratación de servicios de magia personalizados. ¿En qué podemos orientarte hoy?
+              Bienvenido a Praxis Magick. Este canal es para soporte de tu Bóveda Digital, seguimiento de envíos y orientación de servicios personalizados. ¿En qué podemos orientarte hoy?
             </div>
           </div>
 
           {showLoginPrompt && (
             <div className="absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
-              <p className="text-sm text-gray-300 mb-4 font-medieval">
-                Debes crear una cuenta en el Círculo Interno para comunicarte con nuestros practicantes y guardar tu historial.
+              <p className="text-sm text-gray-300 mb-6 font-medieval leading-relaxed">
+                Debes crear una cuenta en el Círculo Interno para comunicarte con nuestros practicantes y mantener tu historial protegido.
               </p>
-              <button onClick={() => setShowLoginPrompt(false)} className="px-6 py-2 border border-green-500/50 text-green-300 rounded-lg hover:bg-green-900/30 transition-colors mb-2 text-xs">
-                Cerrar
-              </button>
+              <div className="w-full flex flex-col gap-3">
+                <button className="w-full py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-lg transition-colors text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                  Crear cuenta gratuita
+                </button>
+                <button onClick={() => setShowLoginPrompt(false)} className="w-full py-2 bg-transparent text-gray-400 hover:text-white transition-colors text-xs">
+                  Cerrar
+                </button>
+              </div>
             </div>
           )}
 
