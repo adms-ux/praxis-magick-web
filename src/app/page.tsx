@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import PortalRegistro from "./Components/PortalRegistro";
 import CatalogoCompleto from "./Components/CatalogoCompleto";
-import ServiciosBanners from "./Components/ServiciosBanners";
 import ChatFlotante from "./Components/ChatFlotante";
 import BotonSubir from "./Components/BotonSubir";
 import { useLegal } from "./Context/LegalContext";
@@ -11,6 +10,7 @@ import { useLegal } from "./Context/LegalContext";
 export default function Home() {
   const { openLegalModal } = useLegal(); 
   
+  // Lógica del contador y apertura de tienda
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   
@@ -98,6 +98,7 @@ export default function Home() {
       if (!isActive) { animationFrameId = requestAnimationFrame(render); return; }
       ctx.clearRect(0, 0, width, height);
       
+      // RELÁMPAGO VERDE PARA ILUMINAR EL CASTILLO
       if (flashAlpha > 0) {
         ctx.fillStyle = `rgba(34, 197, 94, ${flashAlpha})`; 
         ctx.fillRect(0, 0, width, height);
@@ -129,9 +130,13 @@ export default function Home() {
   const formatNumber = (num: number) => String(num).padStart(2, "0");
   const toggleFaq = (index: number) => { setOpenFaq(openFaq === index ? null : index); };
 
-  const handleComprarAction = () => {
-    // Redirige a la sección del libro directamente
-    window.location.href = "/ebooks";
+  const handleBookAction = () => {
+    // Si la tienda ya abrió, requerimos cuenta para ver muestras o comprar
+    if (isStoreOpen) {
+      setShowLoginPrompt(true);
+    } else {
+      window.location.href = "https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01";
+    }
   };
 
   const handleMuestraGratis = () => {
@@ -157,28 +162,32 @@ export default function Home() {
       
       <div className="fixed inset-0 pointer-events-none z-0 bg-black bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.10),transparent_80%)]" />
 
+      {/* ================= HERO RECUADRO ================= */}
       <div ref={heroContainerRef} className="hero-mask relative w-full md:w-[95%] max-w-6xl mx-auto h-[70vh] min-h-[500px] overflow-hidden mt-16 z-10 flex flex-col items-center justify-center">
         <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full" />
         
+        {/* Luna Verde */}
         <div className="absolute top-[10%] right-[10%] w-24 h-24 md:w-32 md:h-32 z-10 flex items-center justify-center">
           <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.25)_0%,transparent_70%)] animate-pulse" />
           <Image src="/luna.png" alt="Luna" fill className="object-contain drop-shadow-[0_0_15px_rgba(34,197,94,0.7)]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
-        <div className="absolute bottom-0 w-full h-[55%] md:h-[70%] z-10 opacity-90 pointer-events-none mix-blend-lighten">
-          <Image src="/castillo.png" alt="Castillo" fill className="object-cover object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        {/* Silueta del Castillo (Frente a los rayos) */}
+        <div className="absolute bottom-0 w-full h-[55%] md:h-[70%] z-10 opacity-90 pointer-events-none">
+          <Image src="/castillo.png" alt="" fill className="object-cover object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
         <div className="relative z-20 flex flex-col items-center mt-[-15vh]">
           <div className="w-32 h-32 md:w-44 md:h-44 mb-2 rounded-full border border-green-500/30 bg-black/60 backdrop-blur-md flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.3)] p-3">
             <Image src="/logo.png" alt="Logo Praxis Magick" width={160} height={160} className="object-contain" priority />
           </div>
-          <h1 className="text-sm md:text-lg font-cinzel text-gray-300 tracking-[0.2em] md:tracking-[0.3em] uppercase drop-shadow-md text-center bg-black/40 px-6 py-2 rounded-full backdrop-blur-sm border border-white/5">
+          <h1 className="text-sm md:text-lg font-cinzel text-gray-300 tracking-[0.2em] md:tracking-[0.3em] uppercase drop-shadow-md text-center">
             Tienda de Productos Esotéricos
           </h1>
         </div>
       </div>
 
+      {/* ================= CONTENIDO PRINCIPAL ================= */}
       <div className="relative z-20 flex flex-col items-center px-4 w-full max-w-5xl -mt-16 pb-10">
         
         <div className="mb-10 w-full flex justify-center">
@@ -226,8 +235,8 @@ export default function Home() {
 
         <PortalRegistro />
         <CatalogoCompleto />
-        <ServiciosBanners />
 
+        {/* FAQ SECTION */}
         <div id="faq" className="w-full max-w-3xl text-left mt-10">
           <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center border-b border-white/10 pb-4">Preguntas Frecuentes</h3>
           <div className="space-y-2 font-sans text-sm">
@@ -250,8 +259,8 @@ export default function Home() {
 
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-8 px-6 z-30 text-center font-sans text-[10px] text-gray-500 mt-auto">
         <div className="flex flex-wrap justify-center gap-4 text-gray-400 mb-4">
-          <button onClick={() => openLegalModal("terminos")} className="hover:text-green-400 underline cursor-pointer">Términos y Condiciones</button>
-          <button onClick={() => openLegalModal("privacidad")} className="hover:text-purple-400 underline cursor-pointer">Aviso de Privacidad</button>
+          <button onClick={() => openLegalModal("terminos")} className="hover:text-green-400 underline">Términos y Condiciones</button>
+          <button onClick={() => openLegalModal("privacidad")} className="hover:text-purple-400 underline">Aviso de Privacidad</button>
         </div>
         <p>© 2026 Praxis Magick. Todos los derechos reservados.</p>
       </footer>
@@ -259,11 +268,11 @@ export default function Home() {
       <BotonSubir />
       <ChatFlotante />
 
-      {/* Modal de Aviso de Registro Restringido */}
+      {/* Modal de Aviso para Iniciar Sesión (Sustituye captura de leads post-apertura) */}
       {showLoginPrompt && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="relative w-full max-w-sm bg-black border border-green-500/50 rounded-2xl p-6 md:p-8 font-sans text-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
-            <button onClick={() => setShowLoginPrompt(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer">✕</button>
+            <button onClick={() => setShowLoginPrompt(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
             <h3 className="text-xl font-cinzel text-green-300 mb-4">Ingreso Requerido</h3>
             <p className="text-xs text-gray-300 mb-6 leading-relaxed font-medieval">
               Debes tener una cuenta en el Círculo Interno para leer muestras, acceder a instrucciones, o realizar compras en la tienda.
