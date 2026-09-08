@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import PortalRegistro from "./Components/PortalRegistro";
 // IMPORTAMOS EL MEGÁFONO LEGAL:
 import { useLegal } from "./Context/LegalContext";
 
@@ -504,6 +505,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <PortalRegistro/>
 
       {/* FOOTER */}
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
