@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import PortalRegistro from "./Components/PortalRegistro";
 import CatalogoExpectativa from "./Components/CatalogoExpectativa";
-// IMPORTAMOS EL MEGÁFONO LEGAL:
 import { useLegal } from "./Context/LegalContext";
 
 const BANNERS = [
@@ -16,35 +15,33 @@ const BANNERS = [
   "/banner-danse.png"
 ];
 
-// Expresión regular para validar formato de correo electrónico
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Home() {
-  const { openLegalModal } = useLegal(); // INICIALIZAMOS EL MEGÁFONO
+  const { openLegalModal } = useLegal(); 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Estados de Modales
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [showEbookFaqModal, setShowEbookFaqModal] = useState(false);
   const [openEbookFaq, setOpenEbookFaq] = useState<number | null>(null);
   const [showPdfModal, setShowPdfModal] = useState(false);
-  
+
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
-  
+
   const [freeTrialEmail, setFreeTrialEmail] = useState("");
   const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
   const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
-  const [pdfUrlToView, setPdfUrlToView] = useState("");
-  const [rawPdfUrl, setRawPdfUrl] = useState(""); // Nuevo estado para el botón de fallback
 
+  const [pdfUrlToView, setPdfUrlToView] = useState("");
+  const [rawPdfUrl, setRawPdfUrl] = useState(""); 
   const [currentBannerIdx, setCurrentBannerIdx] = useState(0);
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Contador de la preventa
   useEffect(() => {
     const targetDate = new Date(2026, 8, 23, 23, 59, 59).getTime();
     const interval = setInterval(() => {
@@ -62,7 +59,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Intervalo del carrusel de banners
   useEffect(() => {
     const bannerInterval = setInterval(() => {
       setCurrentBannerIdx((prev) => (prev + 1) % BANNERS.length);
@@ -70,13 +66,11 @@ export default function Home() {
     return () => clearInterval(bannerInterval);
   }, []);
 
-  // Animación del fondo (Rayos) - OPTIMIZADA PARA RAM
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     let animationFrameId: number;
     let width = 0;
     let height = 0;
@@ -182,7 +176,6 @@ export default function Home() {
 
     const handleVisibilityChange = () => { isActive = !document.hidden; };
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
     const handlePageShow = (e: PageTransitionEvent) => {
       if (e.persisted) {
         resizeCanvas();
@@ -200,37 +193,20 @@ export default function Home() {
   }, []);
 
   const formatNumber = (num: number) => String(num).padStart(2, "0");
-
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index);
-  };
-
-  const toggleEbookFaq = (index: number) => {
-    setOpenEbookFaq(openEbookFaq === index ? null : index);
-  };
+  const toggleFaq = (index: number) => { setOpenFaq(openFaq === index ? null : index); };
+  const toggleEbookFaq = (index: number) => { setOpenEbookFaq(openEbookFaq === index ? null : index); };
 
   const handleProceedToPayment = () => {
-    if (!checkoutEmail) {
-      alert("Por favor ingresa tu correo electrónico.");
-      return;
-    }
-    if (!EMAIL_REGEX.test(checkoutEmail)) {
-        alert("Por favor, ingresa un formato de correo electrónico válido.");
-        return;
-    }
-    const stripeUrl = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(
-      checkoutEmail
-    )}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
+    if (!checkoutEmail) { alert("Por favor ingresa tu correo electrónico."); return; }
+    if (!EMAIL_REGEX.test(checkoutEmail)) { alert("Por favor, ingresa un formato de correo electrónico válido."); return; }
+    const stripeUrl = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(checkoutEmail)}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
     window.location.href = stripeUrl;
   };
 
   const handleSubmitFreeTrial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!freeTrialEmail) return;
-    if (!EMAIL_REGEX.test(freeTrialEmail)) {
-        alert("Por favor, ingresa un formato de correo electrónico válido.");
-        return;
-    }
+    if (!EMAIL_REGEX.test(freeTrialEmail)) { alert("Por favor, ingresa un formato de correo electrónico válido."); return; }
     setIsSubmittingTrial(true);
     try {
       await fetch("/api/webhook", {
@@ -243,13 +219,10 @@ export default function Home() {
           timestamp: new Date().toISOString()
         }),
       });
-      
       const baseUrl = freeTrialLanguage === "es" 
         ? "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf" 
         : "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-sample-en.pdf";
-      
       const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`;
-      
       setRawPdfUrl(baseUrl);
       setPdfUrlToView(viewerUrl);
       setShowFreeTrialModal(false);
@@ -299,21 +272,17 @@ export default function Home() {
         </div>
       </div>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <div className="relative z-10 flex flex-col items-center text-center px-6 w-full max-w-5xl pt-10 pb-20">
+      {/* CABECERA (HERO) */}
+      <div className="relative z-10 flex flex-col items-center text-center px-6 w-full max-w-5xl pt-24 pb-20">
         <div className="w-28 h-28 md:w-36 md:h-36 mb-6 rounded-full border border-purple-500/30 bg-black/50 backdrop-blur-md flex items-center justify-center shadow-[0_0_25px_rgba(168,85,247,0.25)] overflow-hidden p-2">
           <Image src="/logo.png" alt="Logo Praxis Magick" width={140} height={140} className="object-contain w-full h-full" priority />
         </div>
-        <h1 className="text-5xl md:text-7xl font-bold mb-4 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-gray-300 to-gray-500 tracking-widest drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] uppercase">
-          Praxis Magick
+        
+        {/* SUBTÍTULO MODIFICADO: Solo "Tienda de productos esotéricos" */}
+        <h1 className="text-xl md:text-2xl font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 tracking-[0.2em] uppercase mb-10 drop-shadow-md">
+          Tienda de Productos Esotéricos
         </h1>
-        
-        <div className="w-full max-w-2xl text-center mb-6 px-4">
-          <p className="font-serif-classic text-sm md:text-base text-gray-300 leading-relaxed bg-black/40 border border-white/5 backdrop-blur-md p-5 rounded-xl shadow-inner">
-            «Praxis Magick es una tienda de productos esotéricos consagrados a los espíritus de la alta magia. Nuestro arsenal, tanto digital como físico, está dirigido a practicantes dedicados y al público en general. Sé testigo del nacimiento y la expansión de este proyecto mágico.»
-          </p>
-        </div>
-        
+
         <div className="px-6 md:px-10 py-6 mb-10 mt-2 border border-white/10 rounded-2xl bg-black/60 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.8)]">
           <p className="text-4xl md:text-6xl font-mono text-green-400 tracking-widest drop-shadow-[0_0_15px_rgba(74,222,128,0.6)]">
             {formatNumber(timeLeft.days)}:{formatNumber(timeLeft.hours)}:{formatNumber(timeLeft.minutes)}:{formatNumber(timeLeft.seconds)}
@@ -322,7 +291,6 @@ export default function Home() {
             <span>Días</span> <span>Hrs</span> <span>Min</span> <span>Seg</span>
           </p>
         </div>
-
         <div className="flex flex-wrap justify-center items-center gap-4 mb-16 text-sm font-medieval text-gray-300">
           <a href="#instrucciones" className="hover:text-green-400 transition-colors border-b border-transparent hover:border-green-400 pb-0.5">
             ↓ Instrucciones de compra
@@ -356,21 +324,19 @@ export default function Home() {
               <strong>Demonios del Verum</strong> rescata una parte de ese grimorio que casi nadie ha explorado en el mundo moderno. <strong>Deborah Visper</strong> traduce ese grimorio antiguo a un método operativo para el siglo XXI: sin dogma, sin lenguaje arcaico y sin rituales innecesariamente complicados. Un manual directo para quien busca resultados concretos, con el entrenamiento, la estrategia y el ritual completo para trabajar con estos 18 espíritus.
             </p>
             
-            {/* BOTÓN: SABER MÁS */}
             <button 
               onClick={() => setShowEbookFaqModal(true)}
               className="inline-flex items-center gap-2 px-5 py-2.5 mb-6 text-sm font-cinzel font-bold tracking-wide text-purple-200 border border-purple-500/50 rounded-lg bg-purple-900/30 hover:bg-purple-800/60 hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all cursor-pointer"
             >
               ¿Tienes dudas? Resuélvelas aquí <span>→</span>
             </button>
-
             <blockquote className="text-xs font-medieval text-gray-400 border-l-2 border-purple-500 pl-3 mb-6 italic bg-purple-950/20 py-2 rounded-r">
               Aviso: Este contenido es de naturaleza esotérica y se ofrece con fines educativos y de práctica personal.
             </blockquote>
             
             <div className="p-5 border border-purple-800/40 rounded-xl bg-purple-950/20 backdrop-blur-sm mb-6">
               <h3 className="text-lg font-cinzel text-purple-300 mb-2 flex items-center gap-2">
-                <span>🎟️</span> Bono especial de preventa
+                Bono especial de preventa
               </h3>
               <p className="text-sm text-gray-300 font-medieval leading-relaxed mb-3">
                 Por tiempo limitado, al adquirir <em>Demonios del Verum</em> en preventa recibirás un cupón de descuento exclusivo para adquirir nuestro próximo lanzamiento:
@@ -382,7 +348,7 @@ export default function Home() {
                 Una guía introductoria al trabajo con las siete inteligencias planetarias clásicas, perfecta como complemento para expandir tu práctica más allá de la magia goética.
               </p>
               <p className="text-xs font-semibold text-purple-400 font-medieval">
-                📅 El cupón se te enviará el día de su lanzamiento: 23 de octubre.
+                El cupón se te enviará el día de su lanzamiento: 23 de octubre.
               </p>
             </div>
           </div>
@@ -467,7 +433,7 @@ export default function Home() {
         </div>
 
         {/* PREGUNTAS FRECUENTES (GENERALES) */}
-        <div id="faq" className="w-full max-w-3xl text-left mb-24">
+        <div id="faq" className="w-full max-w-3xl text-left mb-16">
           <h3 className="text-3xl font-cinzel text-purple-300 mb-8 text-center">Preguntas Frecuentes</h3>
           <div className="space-y-4 font-medieval">
             <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
@@ -506,9 +472,10 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* BLOQUES FINALES: PORTAL REGISTRO Y CATÁLOGO */}
       <PortalRegistro/>
-      <PortalRegistro/>
-              <CatalogoExpectativa/>
+      <CatalogoExpectativa/>
 
       {/* FOOTER */}
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-10 px-6 z-10 text-center font-medieval text-xs text-gray-500">
@@ -553,7 +520,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-xs text-purple-300 border-t border-white/10 pt-2 mt-2">
-                🎟️ Incluye: Cupón de descuento para <strong>Magia Olímpica</strong> (23 Oct).
+                Incluye: Cupón de descuento para <strong>Magia Olímpica</strong> (23 Oct).
               </p>
             </div>
             <div className="mb-4">
@@ -615,7 +582,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL VISOR DE PDF EN PANTALLA COMPLETA (OPTIMIZADO PARA MÓVIL) */}
+      {/* MODAL VISOR DE PDF */}
       {showPdfModal && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-2 md:p-4 bg-black/95 backdrop-blur-md">
           <div className="relative w-full h-full max-h-[90vh] max-w-4xl bg-black border border-purple-500/40 rounded-xl overflow-hidden flex flex-col shadow-[0_0_40px_rgba(168,85,247,0.5)]">
@@ -623,8 +590,6 @@ export default function Home() {
               <span className="font-cinzel text-purple-200 tracking-wide font-bold text-sm md:text-base">Demonios del Verum - Muestra Gratuita</span>
               <button onClick={() => setShowPdfModal(false)} className="text-gray-300 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
             </div>
-            
-            {/* Contenedor con scroll nativo para evitar glitches en Android */}
             <div className="flex-grow w-full h-full overflow-hidden bg-white relative" style={{ WebkitOverflowScrolling: 'touch' }}>
               <iframe 
                 src={pdfUrlToView} 
@@ -633,16 +598,9 @@ export default function Home() {
                 loading="lazy"
               />
             </div>
-            
-            {/* BOTÓN DE SEGURIDAD (FALLBACK) POR SI GOOGLE DOCS FALLA */}
             <div className="bg-purple-950/80 p-2 text-center flex justify-center items-center gap-3 shrink-0">
               <span className="text-[10px] md:text-xs text-gray-300 font-sans">¿El documento no carga o se ve borroso?</span>
-              <a 
-                href={rawPdfUrl} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-bold font-sans transition-colors shadow-lg"
-              >
+              <a href={rawPdfUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-bold font-sans transition-colors shadow-lg">
                 Abrir directo
               </a>
             </div>
@@ -650,15 +608,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL: PREGUNTAS DEL EBOOK (SABER MÁS) */}
+      {/* MODAL: PREGUNTAS DEL EBOOK */}
       {showEbookFaqModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-black border border-green-500/40 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(34,197,94,0.2)] font-medieval text-gray-200 hide-scroll-bar">
             <button onClick={() => setShowEbookFaqModal(false)} className="absolute top-4 right-5 text-gray-400 hover:text-white text-2xl cursor-pointer">✕</button>
-            
             <h3 className="text-2xl md:text-3xl font-cinzel text-purple-300 mb-2 text-center drop-shadow-md">Antes de decidir</h3>
             <p className="text-sm text-gray-400 text-center mb-6 font-sans">Lo que probablemente te estás preguntando</p>
-            
             <div className="space-y-4 mb-8">
               <div className="border border-white/10 rounded-xl bg-black/50 overflow-hidden">
                 <button onClick={() => toggleEbookFaq(1)} className="w-full p-4 text-left flex justify-between items-center text-green-200 hover:text-green-300 transition-colors font-semibold cursor-pointer text-sm md:text-base">
@@ -667,7 +623,7 @@ export default function Home() {
                 </button>
                 {openEbookFaq === 1 && (
                   <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                    El entrenamiento del operador (cómo posicionarte antes de invocar), la estrategia completa de trabajo con los 18 espíritus de Syrach, el ritual único de evocación a través de Scirlin, y el marco práctico para traducir peticiones antiguas ('construir castillos', 'proveer familiares') a resultados concretos en tu vida actual: influencia, aliados estratégicos, intuición aguda. No es una colección de datos históricos — es un método operativo paso a paso.
+                    El entrenamiento del operador, la estrategia completa con los 18 espíritus de Syrach, el ritual único de evocación a través de Scirlin, y el marco práctico para traducir peticiones antiguas a resultados concretos en tu vida actual. No es una colección de datos históricos — es un método operativo paso a paso.
                   </div>
                 )}
               </div>
@@ -678,7 +634,7 @@ export default function Home() {
                 </button>
                 {openEbookFaq === 2 && (
                   <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                    No si trabajas con el método tal como está estructurado. El sistema del Grimorium Verum no depende del miedo ni de círculos de sal desesperados: depende de que tú actúes como la autoridad del ritual. El libro te da tres capas de seguridad: cómo posicionarte como operador legítimo, el papel de Scirlin como intermediario que filtra a quién realmente llamas, y un cierre formal (la Licencia para Partir) que exige que el espíritu se retire sin causar daño. La tradición detrás de esta magia trataba a estos espíritus como aliados con los que se negocia, no como fuerzas que hay que temer a ciegas.
+                    No si trabajas con el método tal como está estructurado. El libro te da tres capas de seguridad: cómo posicionarte como operador legítimo, el papel de Scirlin como intermediario, y un cierre formal (la Licencia para Partir) que exige que el espíritu se retire sin causar daño.
                   </div>
                 )}
               </div>
@@ -689,7 +645,7 @@ export default function Home() {
                 </button>
                 {openEbookFaq === 3 && (
                   <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                    No. El libro está escrito deliberadamente sin dogma ni lenguaje arcaico innecesario, pensado para que un operador moderno —con o sin experiencia previa— pueda entender la lógica del sistema y ejecutarlo. Si ya practicas otras tradiciones, puedes incorporar tus herramientas habituales (velas, inciensos, círculos); si no, el método funciona igual sin ellas, porque el poder reside en el operador, no en el objeto.
+                    No. El libro está escrito sin dogma ni lenguaje arcaico, pensado para que un operador moderno pueda entender la lógica y ejecutarla. Si ya practicas otras tradiciones, puedes incorporar tus herramientas habituales; si no, el método funciona igual sin ellas.
                   </div>
                 )}
               </div>
@@ -700,12 +656,11 @@ export default function Home() {
                 </button>
                 {openEbookFaq === 4 && (
                   <div className="px-5 pb-5 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
-                    Lo lees directamente en tu biblioteca virtual dentro de nuestra plataforma web, con acceso desde tu cuenta. Para proteger la obra no está disponible como descarga, pero sí tendrás enlaces exclusivos para descargar e imprimir los sellos rituales que necesitas para la práctica. Aún no contamos con versiones físicas.
+                    Lo lees directamente en tu biblioteca virtual dentro de nuestra plataforma web. Para proteger la obra no está disponible como descarga, pero sí tendrás enlaces exclusivos para descargar e imprimir los sellos rituales que necesitas para la práctica.
                   </div>
                 )}
               </div>
             </div>
-            
             <div className="flex justify-center w-full border-t border-green-500/30 pt-6 mt-4">
               <button 
                 onClick={() => {
@@ -717,11 +672,9 @@ export default function Home() {
                 Comprar Preventa
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </main>
   );
 }
