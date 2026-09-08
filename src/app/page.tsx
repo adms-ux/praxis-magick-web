@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import PortalRegistro from "./Components/PortalRegistro";
 import CatalogoCompleto from "./Components/CatalogoCompleto";
 import ServiciosMagicos from "./Components/ServiciosMagicos";
@@ -15,11 +14,14 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isStoreOpen, setIsStoreOpen] = useState(false);
 
+  // LÍNEA CORREGIDA: Declaración del estado para las preguntas frecuentes generales
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openEbookFaq, setOpenEbookFaq] = useState<number | null>(null);
+
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [showEbookFaqModal, setShowEbookFaqModal] = useState(false);
-  const [openEbookFaq, setOpenEbookFaq] = useState<number | null>(null);
 
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
@@ -143,13 +145,13 @@ export default function Home() {
   const toggleEbookFaq = (index: number) => { setOpenEbookFaq(openEbookFaq === index ? null : index); };
 
   const handleProceedToPayment = () => {
-    if (!checkoutEmail || !EMAIL_REGEX.test(checkoutEmail)) return;
+    if (!checkoutEmail || !EMAIL_REGEX.test(checkoutEmail)) { alert("Por favor, ingresa un correo válido."); return; }
     window.location.href = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(checkoutEmail)}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
   };
 
   const handleSubmitFreeTrial = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!freeTrialEmail || !EMAIL_REGEX.test(freeTrialEmail)) return;
+    if (!freeTrialEmail || !EMAIL_REGEX.test(freeTrialEmail)) { alert("Por favor, ingresa un correo válido."); return; }
     setIsSubmittingTrial(true);
     try {
       await fetch("/api/webhook", {
@@ -190,7 +192,7 @@ export default function Home() {
         </div>
 
         <div className="absolute bottom-0 w-full h-[45%] md:h-[60%] z-10 opacity-90 pointer-events-none mix-blend-lighten">
-          <Image src="/castillo.png" alt="" fill className="object-cover object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <Image src="/castillo.png" alt="Castillo" fill className="object-cover object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
         <div className="relative z-20 flex flex-col items-center mt-[-10vh]">
