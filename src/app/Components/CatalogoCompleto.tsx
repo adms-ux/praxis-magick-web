@@ -2,6 +2,8 @@
 
 export default function CatalogoCompleto() {
   const productos = [
+    { id: "e1", name: "Demonios del Verum", desc: "Método operativo completo para trabajar con los 18 espíritus.", tag: "Disponible" },
+    { id: "e2", name: "Magia Olímpica", desc: "Guía para trabajar con las siete inteligencias planetarias clásicas.", tag: "23 Octubre" },
     { id: "o1", name: "Jester's Road (Oleum)", desc: "Abre Caminos. Surgat abre las puertas.", tag: "Próximamente" },
     { id: "o2", name: "Leprechaun's Hoard (Oleum)", desc: "Abundancia. Atrae abundancia a tu vida.", tag: "Próximamente" },
     { id: "o3", name: "Pope's Decree (Oleum)", desc: "Dominación. Influye en pensamientos ajenos.", tag: "Próximamente" },
@@ -30,7 +32,7 @@ export default function CatalogoCompleto() {
           <div key={producto.id} className="bg-black/50 border border-purple-500/20 rounded-xl overflow-hidden hover:border-purple-500/60 transition-all duration-300 flex flex-col">
             <div className="relative w-full aspect-square bg-white/5 flex items-center justify-center border-b border-purple-500/20 p-2 text-center">
               <span className="text-gray-600 font-sans text-[10px] md:text-xs uppercase tracking-widest">
-                Próximamente
+                Imagen Próximamente
               </span>
               <div className="absolute top-2 right-2 bg-black/80 border border-purple-500/50 text-purple-300 text-[8px] md:text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded backdrop-blur-md">
                 {producto.tag}
