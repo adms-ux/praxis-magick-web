@@ -15,13 +15,11 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   
-  // MOCK: Variable de estado de usuario
   const isUserLoggedIn = false; 
-
+  
   const [showLoginPrompt, setShowLoginPrompt] = useState(false); 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Estados de Modales recuperados
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [showPdfModal, setShowPdfModal] = useState(false);
@@ -146,8 +144,6 @@ export default function Home() {
   const formatNumber = (num: number) => String(num).padStart(2, "0");
   const toggleFaq = (index: number) => { setOpenFaq(openFaq === index ? null : index); };
 
-  // ================= FUNCIONES RECUPERADAS Y CORREGIDAS =================
-
   const handleComprarAction = () => {
     if (isStoreOpen && !isUserLoggedIn) {
       setShowLoginPrompt(true);
@@ -187,8 +183,6 @@ export default function Home() {
     } finally { setIsSubmittingTrial(false); }
   };
 
-  // ======================================================================
-
   return (
     <main className="relative min-h-screen bg-black overflow-x-hidden flex flex-col items-center text-white selection:bg-green-900 selection:text-green-300 pb-10">
       <style>{`
@@ -204,7 +198,7 @@ export default function Home() {
       
       <div className="fixed inset-0 pointer-events-none z-0 bg-black bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.10),transparent_80%)]" />
 
-      {/* HERO RECUADRO */}
+      {/* HERO RECUADRO - Corrección de Castillo */}
       <div ref={heroContainerRef} className="hero-mask relative w-full md:w-[95%] max-w-6xl mx-auto h-[70vh] min-h-[500px] overflow-hidden mt-16 z-10 flex flex-col items-center justify-center">
         <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full" />
         
@@ -213,8 +207,9 @@ export default function Home() {
           <Image src="/luna.png" alt="Luna" fill className="object-contain drop-shadow-[0_0_15px_rgba(34,197,94,0.7)]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
-        <div className="absolute bottom-0 w-full h-[55%] md:h-[70%] z-10 opacity-90 pointer-events-none">
-          <Image src="/castillo.png" alt="" fill className="object-cover object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        {/* CONTENEDOR CORREGIDO: Altura más grande y object-contain */}
+        <div className="absolute bottom-0 w-full h-[75%] md:h-[85%] z-10 opacity-90 pointer-events-none">
+          <Image src="/castillo.png" alt="" fill className="object-contain object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
         <div className="relative z-20 flex flex-col items-center mt-[-15vh]">
@@ -246,7 +241,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* EBOOK BANNER LIMPIO CON PRECIO INTELIGENTE */}
         <div className="w-full max-w-4xl bg-black/60 border border-green-500/30 rounded-xl overflow-hidden mb-10 flex flex-col md:flex-row items-center p-6 gap-6 md:gap-10 backdrop-blur-sm shadow-[0_0_30px_rgba(21,128,61,0.15)]">
           <div className="w-32 h-48 md:w-40 md:h-60 shrink-0 relative rounded-md overflow-hidden shadow-[0_0_20px_rgba(21,128,61,0.3)]">
             <Image src="/verum-portada.png" alt="Demonios del Verum" fill className="object-cover" priority onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -275,7 +269,6 @@ export default function Home() {
         <PortalRegistro />
         <CatalogoCompleto />
 
-        {/* FAQ SECTION */}
         <div id="faq" className="w-full max-w-3xl text-left mt-10">
           <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center border-b border-white/10 pb-4">Preguntas Frecuentes</h3>
           <div className="space-y-2 font-sans text-sm">
@@ -317,7 +310,6 @@ export default function Home() {
               Debes tener una cuenta en el Círculo Interno para leer muestras, acceder a instrucciones o realizar compras en la tienda.
             </p>
             <div className="flex flex-col gap-3">
-              {/* Este botón mandará a la página de registro/login en el futuro */}
               <button className="w-full py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-lg transition-colors text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)] cursor-pointer">
                 Crear cuenta gratuita
               </button>
@@ -329,7 +321,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODALES DE FUNCIONALIDAD (Stripe y PDF) */}
+      {/* MODALES DE COMPRA Y PDF */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 font-medieval text-gray-200">
