@@ -16,7 +16,7 @@ export default function Home() {
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   
   const isUserLoggedIn = false; 
-  
+
   const [showLoginPrompt, setShowLoginPrompt] = useState(false); 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -198,7 +198,7 @@ export default function Home() {
       
       <div className="fixed inset-0 pointer-events-none z-0 bg-black bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.10),transparent_80%)]" />
 
-      {/* HERO RECUADRO - Corrección de Castillo */}
+      {/* ================= HERO RECUADRO ================= */}
       <div ref={heroContainerRef} className="hero-mask relative w-full md:w-[95%] max-w-6xl mx-auto h-[70vh] min-h-[500px] overflow-hidden mt-16 z-10 flex flex-col items-center justify-center">
         <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full" />
         
@@ -207,9 +207,9 @@ export default function Home() {
           <Image src="/luna.png" alt="Luna" fill className="object-contain drop-shadow-[0_0_15px_rgba(34,197,94,0.7)]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
-        {/* CONTENEDOR CORREGIDO: Altura más grande y object-contain */}
+        {/* CONTENEDOR CORREGIDO: object-right-bottom para esconder el corte en el borde derecho */}
         <div className="absolute bottom-0 w-full h-[75%] md:h-[85%] z-10 opacity-90 pointer-events-none">
-          <Image src="/castillo.png" alt="" fill className="object-contain object-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <Image src="/castillo.png" alt="Castillo" fill className="object-contain object-right-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
         <div className="relative z-20 flex flex-col items-center mt-[-15vh]">
@@ -300,7 +300,6 @@ export default function Home() {
       <BotonSubir />
       <ChatFlotante />
 
-      {/* Modal de Aviso para Iniciar Sesión o Crear Cuenta */}
       {showLoginPrompt && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="relative w-full max-w-sm bg-black border border-green-500/50 rounded-2xl p-6 md:p-8 font-sans text-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
@@ -321,7 +320,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODALES DE COMPRA Y PDF */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 font-medieval text-gray-200">
