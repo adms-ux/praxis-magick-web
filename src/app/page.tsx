@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import PortalRegistro from "./Components/PortalRegistro";
 import CatalogoCompleto from "./Components/CatalogoCompleto";
 import ChatFlotante from "./Components/ChatFlotante";
@@ -21,16 +22,11 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-  const [showFreeTrialModal, setShowFreeTrialModal] = useState(false);
   const [showPdfModal, setShowPdfModal] = useState(false);
 
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLanguage, setCheckoutLanguage] = useState<"es" | "en">("es");
-
-  const [freeTrialEmail, setFreeTrialEmail] = useState("");
-  const [freeTrialLanguage, setFreeTrialLanguage] = useState<"es" | "en">("es");
-  const [isSubmittingTrial, setIsSubmittingTrial] = useState(false);
 
   const [pdfUrlToView, setPdfUrlToView] = useState("");
   const [rawPdfUrl, setRawPdfUrl] = useState(""); 
@@ -145,7 +141,7 @@ export default function Home() {
   const toggleFaq = (index: number) => { setOpenFaq(openFaq === index ? null : index); };
 
   const handleComprarAction = () => {
-    if (isStoreOpen && !isUserLoggedIn) {
+    if (!isUserLoggedIn) {
       setShowLoginPrompt(true);
     } else {
       setShowCheckoutModal(true);
@@ -153,34 +149,19 @@ export default function Home() {
   };
 
   const handleMuestraGratis = () => {
-    if (isStoreOpen && !isUserLoggedIn) {
+    if (!isUserLoggedIn) {
       setShowLoginPrompt(true);
     } else {
-      setShowFreeTrialModal(true);
+      const baseUrl = "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf";
+      setRawPdfUrl(baseUrl);
+      setPdfUrlToView(`https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`);
+      setShowPdfModal(true);
     }
   };
 
   const handleProceedToPayment = () => {
     if (!checkoutEmail || !EMAIL_REGEX.test(checkoutEmail)) { alert("Ingresa un correo válido."); return; }
     window.location.href = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(checkoutEmail)}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
-  };
-
-  const handleSubmitFreeTrial = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!freeTrialEmail || !EMAIL_REGEX.test(freeTrialEmail)) return;
-    setIsSubmittingTrial(true);
-    try {
-      await fetch("/api/webhook", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_type: "free_trial", email: freeTrialEmail, language: freeTrialLanguage, timestamp: new Date().toISOString() }),
-      });
-      const baseUrl = freeTrialLanguage === "es" 
-        ? "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-muestra-es.pdf" 
-        : "https://nsdimmoimblxjamvkskc.supabase.co/storage/v1/object/public/archivos_preventa/demonios-del-verum-sample-en.pdf";
-      setRawPdfUrl(baseUrl);
-      setPdfUrlToView(`https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`);
-      setShowFreeTrialModal(false); setShowPdfModal(true); setFreeTrialEmail("");
-    } finally { setIsSubmittingTrial(false); }
   };
 
   return (
@@ -199,16 +180,18 @@ export default function Home() {
       <div className="fixed inset-0 pointer-events-none z-0 bg-black bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.10),transparent_80%)]" />
 
       {/* ================= HERO RECUADRO ================= */}
-      <div ref={heroContainerRef} className="hero-mask relative w-full md:w-[95%] max-w-6xl mx-auto h-[70vh] min-h-[500px] overflow-hidden mt-16 z-10 flex flex-col items-center justify-center">
+      {/* CORRECCIÓN: w-full en lugar de max-w-6xl para que llene la pantalla en monitores */}
+      <div ref={heroContainerRef} className="hero-mask relative w-full h-[70vh] min-h-[500px] overflow-hidden mt-16 z-10 flex flex-col items-center justify-center">
         <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full" />
         
-        <div className="absolute top-[10%] right-[10%] w-24 h-24 md:w-32 md:h-32 z-10 flex items-center justify-center">
+        {/* Luna Verde (Movida un poco a la izquierda right-[20%]) */}
+        <div className="absolute top-[10%] right-[15%] md:right-[20%] w-24 h-24 md:w-32 md:h-32 z-10 flex items-center justify-center">
           <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.25)_0%,transparent_70%)] animate-pulse" />
           <Image src="/luna.png" alt="Luna" fill className="object-contain drop-shadow-[0_0_15px_rgba(34,197,94,0.7)]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
-        {/* CONTENEDOR CORREGIDO: object-right-bottom para esconder el corte en el borde derecho */}
-        <div className="absolute bottom-0 w-full h-[75%] md:h-[85%] z-10 opacity-90 pointer-events-none">
+        {/* Silueta del Castillo (Anclada a la derecha con object-right-bottom) */}
+        <div className="absolute bottom-0 right-0 w-full md:w-[85%] h-[75%] md:h-[85%] z-10 opacity-90 pointer-events-none">
           <Image src="/castillo.png" alt="Castillo" fill className="object-contain object-right-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
@@ -222,6 +205,7 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ================= CONTENIDO PRINCIPAL ================= */}
       <div className="relative z-20 flex flex-col items-center px-4 w-full max-w-5xl -mt-16 pb-10">
         
         <div className="mb-10 w-full flex justify-center">
@@ -241,6 +225,7 @@ export default function Home() {
           )}
         </div>
 
+        {/* EBOOK BANNER LIMPIO CON PRECIOS INTELIGENTES EN MXN Y USD */}
         <div className="w-full max-w-4xl bg-black/60 border border-green-500/30 rounded-xl overflow-hidden mb-10 flex flex-col md:flex-row items-center p-6 gap-6 md:gap-10 backdrop-blur-sm shadow-[0_0_30px_rgba(21,128,61,0.15)]">
           <div className="w-32 h-48 md:w-40 md:h-60 shrink-0 relative rounded-md overflow-hidden shadow-[0_0_20px_rgba(21,128,61,0.3)]">
             <Image src="/verum-portada.png" alt="Demonios del Verum" fill className="object-cover" priority onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -248,20 +233,33 @@ export default function Home() {
           <div className="flex-grow text-center md:text-left flex flex-col justify-center">
             <span className="text-[10px] uppercase tracking-widest text-green-400 mb-2 font-sans border border-green-500/30 inline-block px-2 py-1 rounded w-max mx-auto md:mx-0">Disponible Ahora</span>
             <h2 className="text-2xl md:text-3xl font-cinzel text-gray-100 mb-2">Demonios del Verum</h2>
-            <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
-              <span className="text-2xl font-bold text-green-300">${isStoreOpen ? "340" : "220"} MXN</span>
-              {!isStoreOpen && <span className="text-sm text-gray-400 line-through">$340 MXN</span>}
+            
+            <div className="flex flex-col md:flex-row md:items-baseline justify-center md:justify-start gap-2 mb-4">
+              {isStoreOpen ? (
+                <span className="text-2xl font-bold text-green-300">$340 MXN <span className="text-sm font-sans text-gray-400">($19.99 USD)</span></span>
+              ) : (
+                <>
+                  <span className="text-2xl font-bold text-green-300">$220 MXN <span className="text-sm font-sans text-gray-300">($12.99 USD)</span></span>
+                  <span className="text-sm text-gray-500 line-through">$340 MXN ($19.99 USD)</span>
+                </>
+              )}
             </div>
+
             <p className="text-xs md:text-sm text-gray-400 font-medieval leading-relaxed mb-6">
               El Grimorium Verum rescatado y traducido a un método operativo para el siglo XXI. Incluye la estrategia y el ritual completo.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+            
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center md:justify-start">
               <button onClick={handleComprarAction} className="px-6 py-3 bg-green-700 hover:bg-green-600 text-white text-sm font-bold font-cinzel uppercase tracking-wider rounded-lg transition-colors cursor-pointer border border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-                {isStoreOpen ? "Comprar Ebook" : "Comprar Preventa"}
+                {isStoreOpen ? "Comprar" : "Comprar Preventa"}
               </button>
               <button onClick={handleMuestraGratis} className="px-6 py-3 bg-transparent border border-gray-600 hover:border-gray-400 text-gray-300 text-sm font-cinzel uppercase tracking-wider rounded-lg transition-colors cursor-pointer">
                 Ver Muestra Gratis
               </button>
+              {/* Nuevo botón para ir a la sección dedicada del producto */}
+              <Link href="/ebooks" className="px-6 py-3 bg-transparent border border-purple-500/50 text-purple-300 text-sm font-cinzel uppercase tracking-wider rounded-lg transition-colors hover:bg-purple-900/40 text-center">
+                Ver Producto
+              </Link>
             </div>
           </div>
         </div>
@@ -300,6 +298,7 @@ export default function Home() {
       <BotonSubir />
       <ChatFlotante />
 
+      {/* Modal de Aviso para Iniciar Sesión o Crear Cuenta (Reemplaza a los correos) */}
       {showLoginPrompt && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="relative w-full max-w-sm bg-black border border-green-500/50 rounded-2xl p-6 md:p-8 font-sans text-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
@@ -309,9 +308,9 @@ export default function Home() {
               Debes tener una cuenta en el Círculo Interno para leer muestras, acceder a instrucciones o realizar compras en la tienda.
             </p>
             <div className="flex flex-col gap-3">
-              <button className="w-full py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-lg transition-colors text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)] cursor-pointer">
+              <Link href="/registro" className="w-full py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-lg transition-colors text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)] cursor-pointer">
                 Crear cuenta gratuita
-              </button>
+              </Link>
               <button onClick={() => setShowLoginPrompt(false)} className="w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white rounded-lg transition-colors text-xs cursor-pointer">
                 Cerrar
               </button>
@@ -320,6 +319,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* MODALES DE COMPRA Y PDF (Para cuando SÍ estén logueados) */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 font-medieval text-gray-200">
@@ -338,24 +338,6 @@ export default function Home() {
             <button disabled={!termsAccepted || !checkoutEmail} onClick={handleProceedToPayment} className={`w-full py-4 rounded-lg font-medieval text-lg border ${termsAccepted && checkoutEmail ? "bg-green-600 text-white border-green-400 cursor-pointer" : "bg-gray-800 text-gray-500 cursor-not-allowed"}`}>
               Proceder al Pago Seguro
             </button>
-          </div>
-        </div>
-      )}
-
-      {showFreeTrialModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="relative w-full max-w-md bg-black border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.3)] font-medieval text-gray-200">
-            <button onClick={() => setShowFreeTrialModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer">✕</button>
-            <h3 className="text-2xl font-cinzel text-purple-300 mb-2 text-center">Prueba Gratuita</h3>
-            <form onSubmit={handleSubmitFreeTrial} className="space-y-4">
-              <div>
-                <label className="block text-xs text-purple-300 mb-1">Correo electrónico:</label>
-                <input type="email" required value={freeTrialEmail} onChange={(e) => setFreeTrialEmail(e.target.value)} disabled={isSubmittingTrial} className="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white font-sans outline-none focus:border-purple-400" />
-              </div>
-              <button type="submit" disabled={isSubmittingTrial || !freeTrialEmail} className="w-full py-3.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg font-medieval transition-all border border-purple-500/40 cursor-pointer disabled:opacity-50">
-                {isSubmittingTrial ? "Procesando..." : "Ver Muestra Gratis"}
-              </button>
-            </form>
           </div>
         </div>
       )}
