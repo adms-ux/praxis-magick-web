@@ -54,11 +54,12 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // OPTIMIZACIÓN DE RENDIMIENTO Y RAM PARA CANVAS
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = heroContainerRef.current;
     if (!canvas || !container) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false }); // Mejora rendimiento ignorando transparencias de fondo
     if (!ctx) return;
     let animationFrameId: number;
     let width = 0;
@@ -73,66 +74,76 @@ export default function Home() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    interface Lightning { branches: Lightning[]; alpha: number; path: { x: number; y: number }[]; }
+    // Detener animación si el usuario cambia de pestaña (Ahorra Batería y CPU)
+    const handleVisibility = () => { isActive = !document.hidden; };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    interface Lightning { path: { x: number; y: number }[]; alpha: number; }
     let activeLightnings: Lightning[] = [];
     let flashAlpha = 0;
 
-    const createLightningPath = (x1: number, y1: number, x2: number, y2: number, depth = 0): Lightning => {
-      const path: { x: number; y: number }[] = [{ x: x1, y: y1 }];
-      let currentX = x1; let currentY = y1;
-      const steps = 18 + Math.random() * 8;
-      const dy = (y2 - y1) / steps;
+    const createLightningPath = (startX: number, startY: number, endX: number, endY: number): Lightning => {
+      const path = [{ x: startX, y: startY }];
+      let cx = startX; let cy = startY;
+      const steps = 15; // Reducido para mejor rendimiento
+      const dy = (endY - startY) / steps;
       for (let i = 0; i < steps; i++) {
-        currentX += (Math.random() - 0.5) * 45; currentY += dy;
-        path.push({ x: currentX, y: currentY });
+        cx += (Math.random() - 0.5) * 40; cy += dy;
+        path.push({ x: cx, y: cy });
       }
-      const branches: Lightning[] = [];
-      if (depth < 2 && Math.random() > 0.35) {
-        const branchIndex = Math.floor(Math.random() * (path.length - 2)) + 1;
-        const branchStart = path[branchIndex];
-        branches.push(createLightningPath(branchStart.x, branchStart.y, branchStart.x + (Math.random() - 0.5) * 220, branchStart.y + 140 + Math.random() * 100, depth + 1));
-      }
-      return { branches, alpha: 1, path };
+      return { path, alpha: 1 };
     };
 
     const triggerStrike = () => {
       const startX = Math.random() * width;
-      const endX = startX + (Math.random() - 0.5) * 320;
-      const endY = height * (0.55 + Math.random() * 0.35);
-      activeLightnings.push(createLightningPath(startX, 0, endX, endY));
-      flashAlpha = 0.35 + Math.random() * 0.25;
+      const endX = startX + (Math.random() - 0.5) * 200;
+      activeLightnings.push(createLightningPath(startX, 0, endX, height * 0.7));
+      flashAlpha = 0.3; // Destello más rápido
     };
 
     let nextStrikeTimer = 0;
 
     const render = () => {
-      if (!isActive) { animationFrameId = requestAnimationFrame(render); return; }
-      ctx.clearRect(0, 0, width, height);
-      
-      if (flashAlpha > 0) {
-        ctx.fillStyle = `rgba(34, 197, 94, ${flashAlpha})`; 
-        ctx.fillRect(0, 0, width, height);
-        flashAlpha -= 0.03;
+      if (!isActive) { 
+        animationFrameId = requestAnimationFrame(render); 
+        return; 
       }
       
+      // Fondo sólido negro en lugar de clearRect para evitar problemas de composición gráfica
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, width, height);
+      
+      if (flashAlpha > 0) {
+        ctx.fillStyle = `rgba(20, 100, 40, ${flashAlpha})`; 
+        ctx.fillRect(0, 0, width, height);
+        flashAlpha -= 0.05;
+      }
+      
+      // Reducción extrema de ShadowBlur para computadoras antiguas
+      ctx.shadowBlur = width > 768 ? 8 : 0; 
+      ctx.shadowColor = "#22c55e";
+
       activeLightnings.forEach((bolt, index) => {
         ctx.beginPath();
         ctx.moveTo(bolt.path[0].x, bolt.path[0].y);
         for (let i = 1; i < bolt.path.length; i++) { ctx.lineTo(bolt.path[i].x, bolt.path[i].y); }
-        ctx.strokeStyle = `rgba(200, 255, 200, ${bolt.alpha})`;
-        ctx.lineWidth = 2.5; ctx.shadowColor = "#22c55e"; ctx.shadowBlur = 18; ctx.stroke();
-        bolt.alpha -= 0.04;
+        ctx.strokeStyle = `rgba(180, 255, 180, ${bolt.alpha})`;
+        ctx.lineWidth = 2; 
+        ctx.stroke();
+        bolt.alpha -= 0.05;
         if (bolt.alpha <= 0) activeLightnings.splice(index, 1);
       });
       
       nextStrikeTimer++;
-      if (nextStrikeTimer > 160 + Math.random() * 220) { triggerStrike(); nextStrikeTimer = 0; }
+      if (nextStrikeTimer > 180 + Math.random() * 200) { triggerStrike(); nextStrikeTimer = 0; }
+      
       animationFrameId = requestAnimationFrame(render);
     };
     render();
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+      document.removeEventListener("visibilitychange", handleVisibility);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -177,22 +188,18 @@ export default function Home() {
         }
       `}</style>
       
-      <div className="fixed inset-0 pointer-events-none z-0 bg-black bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.10),transparent_80%)]" />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-black bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.05),transparent_80%)]" />
 
-      {/* ================= HERO RECUADRO ================= */}
-      {/* CORRECCIÓN: w-full en lugar de max-w-6xl para que llene la pantalla en monitores */}
       <div ref={heroContainerRef} className="hero-mask relative w-full h-[70vh] min-h-[500px] overflow-hidden mt-16 z-10 flex flex-col items-center justify-center">
-        <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full" />
+        <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full mix-blend-screen" />
         
-        {/* Luna Verde (Movida un poco a la izquierda right-[20%]) */}
         <div className="absolute top-[10%] right-[15%] md:right-[20%] w-24 h-24 md:w-32 md:h-32 z-10 flex items-center justify-center">
           <div className="absolute w-[200%] h-[200%] rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.25)_0%,transparent_70%)] animate-pulse" />
           <Image src="/luna.png" alt="Luna" fill className="object-contain drop-shadow-[0_0_15px_rgba(34,197,94,0.7)]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
-        {/* Silueta del Castillo (Anclada a la derecha con object-right-bottom) */}
         <div className="absolute bottom-0 right-0 w-full md:w-[85%] h-[75%] md:h-[85%] z-10 opacity-90 pointer-events-none">
-          <Image src="/castillo.png" alt="Castillo" fill className="object-contain object-right-bottom" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <Image src="/castillo.png" alt="Castillo" fill className="object-contain object-right-bottom" priority onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
 
         <div className="relative z-20 flex flex-col items-center mt-[-15vh]">
@@ -205,7 +212,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ================= CONTENIDO PRINCIPAL ================= */}
       <div className="relative z-20 flex flex-col items-center px-4 w-full max-w-5xl -mt-16 pb-10">
         
         <div className="mb-10 w-full flex justify-center">
@@ -225,7 +231,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* EBOOK BANNER LIMPIO CON PRECIOS INTELIGENTES EN MXN Y USD */}
         <div className="w-full max-w-4xl bg-black/60 border border-green-500/30 rounded-xl overflow-hidden mb-10 flex flex-col md:flex-row items-center p-6 gap-6 md:gap-10 backdrop-blur-sm shadow-[0_0_30px_rgba(21,128,61,0.15)]">
           <div className="w-32 h-48 md:w-40 md:h-60 shrink-0 relative rounded-md overflow-hidden shadow-[0_0_20px_rgba(21,128,61,0.3)]">
             <Image src="/verum-portada.png" alt="Demonios del Verum" fill className="object-cover" priority onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -256,8 +261,7 @@ export default function Home() {
               <button onClick={handleMuestraGratis} className="px-6 py-3 bg-transparent border border-gray-600 hover:border-gray-400 text-gray-300 text-sm font-cinzel uppercase tracking-wider rounded-lg transition-colors cursor-pointer">
                 Ver Muestra Gratis
               </button>
-              {/* Nuevo botón para ir a la sección dedicada del producto */}
-              <Link href="/ebooks" className="px-6 py-3 bg-transparent border border-purple-500/50 text-purple-300 text-sm font-cinzel uppercase tracking-wider rounded-lg transition-colors hover:bg-purple-900/40 text-center">
+              <Link href="/ebooks" className="px-6 py-3 bg-transparent border border-green-500/50 text-green-300 text-sm font-cinzel uppercase tracking-wider rounded-lg transition-colors hover:bg-green-900/40 text-center">
                 Ver Producto
               </Link>
             </div>
@@ -268,17 +272,17 @@ export default function Home() {
         <CatalogoCompleto />
 
         <div id="faq" className="w-full max-w-3xl text-left mt-10">
-          <h3 className="text-2xl font-cinzel text-purple-300 mb-6 text-center border-b border-white/10 pb-4">Preguntas Frecuentes</h3>
+          <h3 className="text-2xl font-cinzel text-green-300 mb-6 text-center border-b border-white/10 pb-4">Preguntas Frecuentes</h3>
           <div className="space-y-2 font-sans text-sm">
             <div className="bg-white/5 rounded-lg">
               <button onClick={() => toggleFaq(1)} className="w-full p-4 text-left flex justify-between items-center text-gray-300 hover:text-white cursor-pointer">
-                ¿Debo crear cuenta para comprar? <span className="text-purple-400">{openFaq === 1 ? "−" : "+"}</span>
+                ¿Debo crear cuenta para comprar? <span className="text-green-400">{openFaq === 1 ? "−" : "+"}</span>
               </button>
               {openFaq === 1 && <div className="px-4 pb-4 text-xs text-gray-400 text-justify">Sí. Es obligatorio para que tus ebooks, grimorios e instrucciones de uso se guarden permanentemente en tu Bóveda Digital y protejamos los derechos de distribución.</div>}
             </div>
             <div className="bg-white/5 rounded-lg">
               <button onClick={() => toggleFaq(2)} className="w-full p-4 text-left flex justify-between items-center text-gray-300 hover:text-white cursor-pointer">
-                ¿Hay envíos internacionales? <span className="text-purple-400">{openFaq === 2 ? "−" : "+"}</span>
+                ¿Hay envíos internacionales? <span className="text-green-400">{openFaq === 2 ? "−" : "+"}</span>
               </button>
               {openFaq === 2 && <div className="px-4 pb-4 text-xs text-gray-400 text-justify">La biblioteca digital (ebooks y cursos) es global. Los productos físicos (Oleums, Velas, Polvos) solo se envían dentro de México debido a restricciones aduanales botánicas.</div>}
             </div>
@@ -290,7 +294,7 @@ export default function Home() {
       <footer className="w-full border-t border-white/10 bg-black/80 backdrop-blur-md py-8 px-6 z-30 text-center font-sans text-[10px] text-gray-500 mt-auto">
         <div className="flex flex-wrap justify-center gap-4 text-gray-400 mb-4">
           <button onClick={() => openLegalModal("terminos")} className="hover:text-green-400 underline cursor-pointer">Términos y Condiciones</button>
-          <button onClick={() => openLegalModal("privacidad")} className="hover:text-purple-400 underline cursor-pointer">Aviso de Privacidad</button>
+          <button onClick={() => openLegalModal("privacidad")} className="hover:text-green-400 underline cursor-pointer">Aviso de Privacidad</button>
         </div>
         <p>© 2026 Praxis Magick. Todos los derechos reservados.</p>
       </footer>
@@ -298,7 +302,6 @@ export default function Home() {
       <BotonSubir />
       <ChatFlotante />
 
-      {/* Modal de Aviso para Iniciar Sesión o Crear Cuenta (Reemplaza a los correos) */}
       {showLoginPrompt && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="relative w-full max-w-sm bg-black border border-green-500/50 rounded-2xl p-6 md:p-8 font-sans text-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
@@ -319,7 +322,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODALES DE COMPRA Y PDF (Para cuando SÍ estén logueados) */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-black border border-green-500/40 rounded-2xl p-6 font-medieval text-gray-200">
@@ -344,16 +346,16 @@ export default function Home() {
 
       {showPdfModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 md:p-4 bg-black/95 backdrop-blur-md">
-          <div className="relative w-full h-full max-h-[90vh] max-w-4xl bg-black border border-purple-500/40 rounded-xl overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-3 px-5 bg-purple-950/40 border-b border-purple-500/30 shrink-0">
-              <span className="font-cinzel text-purple-200 text-sm">Demonios del Verum - Muestra</span>
+          <div className="relative w-full h-full max-h-[90vh] max-w-4xl bg-black border border-green-500/40 rounded-xl overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-3 px-5 bg-black/80 border-b border-green-500/30 shrink-0">
+              <span className="font-cinzel text-green-300 text-sm">Demonios del Verum - Muestra</span>
               <button onClick={() => setShowPdfModal(false)} className="text-gray-300 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
             </div>
             <div className="flex-grow w-full h-full bg-white relative overflow-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
               <iframe src={pdfUrlToView} className="absolute top-0 left-0 w-full h-full border-none" title="Visor PDF" loading="lazy" />
             </div>
-            <div className="bg-purple-950/80 p-2 text-center">
-              <a href={rawPdfUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-bold font-sans cursor-pointer">Abrir directo</a>
+            <div className="bg-black/90 p-2 text-center">
+              <a href={rawPdfUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-green-700 hover:bg-green-600 text-white rounded text-xs font-bold font-sans cursor-pointer">Abrir directo</a>
             </div>
           </div>
         </div>
