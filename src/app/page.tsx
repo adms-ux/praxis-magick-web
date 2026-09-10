@@ -4,16 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import PortalRegistro from "./Components/PortalRegistro";
 import CatalogoCompleto from "./Components/CatalogoCompleto";
-import ChatFlotante from "./Components/ChatFlotante";
-import BotonSubir from "./Components/BotonSubir";
 import { useLegal } from "./Context/LegalContext";
-import { useToast } from "./Context/ToastContext"; // IMPORTAMOS LOS TOASTS
+import { useToast } from "./Context/ToastContext"; 
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Home() {
   const { openLegalModal } = useLegal(); 
-  const { showToast } = useToast(); // INICIALIZAMOS LOS TOASTS
+  const { showToast } = useToast(); 
   
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isStoreOpen, setIsStoreOpen] = useState(false);
@@ -170,7 +168,6 @@ export default function Home() {
 
   const handleProceedToPayment = () => {
     if (!checkoutEmail || !EMAIL_REGEX.test(checkoutEmail)) { 
-      // USAMOS TOAST EN LUGAR DE ALERT
       showToast("Por favor, ingresa un correo electrónico válido.", "error"); 
       return; 
     }
@@ -300,9 +297,6 @@ export default function Home() {
         </div>
         <p>© 2026 Praxis Magick. Todos los derechos reservados.</p>
       </footer>
-
-      <BotonSubir />
-      <ChatFlotante />
 
       {showLoginPrompt && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
