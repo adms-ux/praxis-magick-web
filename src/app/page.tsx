@@ -7,11 +7,13 @@ import CatalogoCompleto from "./Components/CatalogoCompleto";
 import ChatFlotante from "./Components/ChatFlotante";
 import BotonSubir from "./Components/BotonSubir";
 import { useLegal } from "./Context/LegalContext";
+import { useToast } from "./Context/ToastContext"; // IMPORTAMOS LOS TOASTS
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Home() {
   const { openLegalModal } = useLegal(); 
+  const { showToast } = useToast(); // INICIALIZAMOS LOS TOASTS
   
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isStoreOpen, setIsStoreOpen] = useState(false);
@@ -54,12 +56,11 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // OPTIMIZACIÓN DE RENDIMIENTO Y RAM PARA CANVAS
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = heroContainerRef.current;
     if (!canvas || !container) return;
-    const ctx = canvas.getContext("2d", { alpha: false }); // Mejora rendimiento ignorando transparencias de fondo
+    const ctx = canvas.getContext("2d", { alpha: false }); 
     if (!ctx) return;
     let animationFrameId: number;
     let width = 0;
@@ -74,7 +75,6 @@ export default function Home() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Detener animación si el usuario cambia de pestaña (Ahorra Batería y CPU)
     const handleVisibility = () => { isActive = !document.hidden; };
     document.addEventListener("visibilitychange", handleVisibility);
 
@@ -85,7 +85,7 @@ export default function Home() {
     const createLightningPath = (startX: number, startY: number, endX: number, endY: number): Lightning => {
       const path = [{ x: startX, y: startY }];
       let cx = startX; let cy = startY;
-      const steps = 15; // Reducido para mejor rendimiento
+      const steps = 15; 
       const dy = (endY - startY) / steps;
       for (let i = 0; i < steps; i++) {
         cx += (Math.random() - 0.5) * 40; cy += dy;
@@ -98,7 +98,7 @@ export default function Home() {
       const startX = Math.random() * width;
       const endX = startX + (Math.random() - 0.5) * 200;
       activeLightnings.push(createLightningPath(startX, 0, endX, height * 0.7));
-      flashAlpha = 0.3; // Destello más rápido
+      flashAlpha = 0.3; 
     };
 
     let nextStrikeTimer = 0;
@@ -109,7 +109,6 @@ export default function Home() {
         return; 
       }
       
-      // Fondo sólido negro en lugar de clearRect para evitar problemas de composición gráfica
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, width, height);
       
@@ -119,7 +118,6 @@ export default function Home() {
         flashAlpha -= 0.05;
       }
       
-      // Reducción extrema de ShadowBlur para computadoras antiguas
       ctx.shadowBlur = width > 768 ? 8 : 0; 
       ctx.shadowColor = "#22c55e";
 
@@ -171,7 +169,11 @@ export default function Home() {
   };
 
   const handleProceedToPayment = () => {
-    if (!checkoutEmail || !EMAIL_REGEX.test(checkoutEmail)) { alert("Ingresa un correo válido."); return; }
+    if (!checkoutEmail || !EMAIL_REGEX.test(checkoutEmail)) { 
+      // USAMOS TOAST EN LUGAR DE ALERT
+      showToast("Por favor, ingresa un correo electrónico válido.", "error"); 
+      return; 
+    }
     window.location.href = `https://buy.stripe.com/14AcN7eDmbCt39N7Sc9IQ01?prefilled_email=${encodeURIComponent(checkoutEmail)}&client_reference_id=${encodeURIComponent(checkoutLanguage)}`;
   };
 
