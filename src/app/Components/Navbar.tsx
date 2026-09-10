@@ -8,10 +8,10 @@ export default function Navbar() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isMobileProductsOpen, setIsMobileProductsOpen] = useState(false);
   
-  // ESTADO SIMULADO DE USUARIO (Cambiar a true para ver la versión de usuario logueado)
   const isUserLoggedIn = false;
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // Eliminamos Consultas y Ouija de este arreglo para ponerlos directos en la barra
   const products = [
     { name: "Ebooks", status: "Disponible", link: "/ebooks", color: "text-green-400" },
     { name: "Grimorios Digitales", status: "Próximamente", link: "/grimorios", color: "text-gray-500" },
@@ -21,8 +21,6 @@ export default function Navbar() {
     { name: "Ídolos", status: "Próximamente", link: "/idolos", color: "text-gray-500" },
     { name: "Velas", status: "Próximamente", link: "/velas", color: "text-gray-500" },
     { name: "Polvos", status: "Próximamente", link: "/polvos", color: "text-gray-500" },
-    { name: "Consultas Personales", status: "Servicio", link: "/consultas", color: "text-purple-400" },
-    { name: "Sesiones de Ouija", status: "Servicio", link: "/ouija", color: "text-purple-400" },
   ];
 
   return (
@@ -37,10 +35,11 @@ export default function Navbar() {
               </Link>
             </div>
 
-            <div className="hidden md:flex space-x-8 items-center">
+            {/* ENLACES DE ESCRITORIO */}
+            <div className="hidden lg:flex space-x-6 items-center text-sm">
               <div className="relative" onMouseEnter={() => setIsProductsOpen(true)} onMouseLeave={() => setIsProductsOpen(false)}>
                 <button className="text-gray-300 hover:text-green-400 transition-colors py-2 flex items-center gap-1 cursor-pointer">
-                  Arsenal Mágico <span className="text-xs">▾</span>
+                  Arsenal Mágico <span className="text-[10px]">▼</span>
                 </button>
                 
                 {isProductsOpen && (
@@ -58,12 +57,16 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
+              
+              {/* Servicios y Acerca de PM separados del Arsenal */}
+              <Link href="/consultas" className="text-gray-300 hover:text-purple-400 transition-colors">Consultas</Link>
+              <Link href="/ouija" className="text-gray-300 hover:text-purple-400 transition-colors">Ouija</Link>
+              <Link href="/acerca" className="text-gray-300 hover:text-green-400 transition-colors">Acerca de PM</Link>
               <Link href="#faq" className="text-gray-300 hover:text-green-400 transition-colors">FAQ</Link>
             </div>
 
             <div className="hidden md:flex items-center space-x-6 relative">
               
-              {/* MENÚ DE PERFIL DESPLEGABLE */}
               <div className="relative" onMouseEnter={() => setIsProfileOpen(true)} onMouseLeave={() => setIsProfileOpen(false)}>
                 <button className="text-gray-400 hover:text-green-300 transition-colors cursor-pointer py-2">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -74,7 +77,7 @@ export default function Navbar() {
                     <div className="py-2">
                       {!isUserLoggedIn ? (
                         <Link href="/registro" className="block px-4 py-3 hover:bg-green-900/30 text-sm font-bold text-green-300 transition-colors">
-                          Iniciar Sesión / Registro
+                          Iniciar Sesión
                         </Link>
                       ) : (
                         <>
@@ -84,7 +87,7 @@ export default function Navbar() {
                           </div>
                           <Link href="/boveda" className="block px-4 py-2 hover:bg-green-900/30 text-sm text-gray-200 transition-colors">Mi Bóveda</Link>
                           <Link href="/perfil" className="block px-4 py-2 hover:bg-green-900/30 text-sm text-gray-200 transition-colors">Ajustes de Perfil</Link>
-                          <button className="w-full text-left px-4 py-2 hover:bg-red-900/30 text-sm text-red-400 transition-colors border-t border-white/10 mt-1">Cerrar Sesión</button>
+                          <button className="w-full text-left px-4 py-2 hover:bg-red-900/30 text-sm text-red-400 transition-colors border-t border-white/10 mt-1 cursor-pointer">Cerrar Sesión</button>
                         </>
                       )}
                     </div>
@@ -112,6 +115,7 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* MENÚ MÓVIL */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-black border-t border-green-500/30 max-h-[85vh] overflow-y-auto pb-6">
             <div className="flex justify-around items-center py-4 border-b border-white/10 bg-white/5">
@@ -149,9 +153,15 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
-              <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="block py-4 text-gray-300 border-b border-white/10">FAQ</Link>
+              
+              {/* Servicios y Acerca separados en el menú móvil */}
+              <Link href="/consultas" onClick={() => setIsMobileMenuOpen(false)} className="block py-4 text-purple-300 font-bold border-b border-white/10">Consultas Personales</Link>
+              <Link href="/ouija" onClick={() => setIsMobileMenuOpen(false)} className="block py-4 text-purple-300 font-bold border-b border-white/10">Sesiones de Ouija</Link>
+              <Link href="/acerca" onClick={() => setIsMobileMenuOpen(false)} className="block py-4 text-gray-300 border-b border-white/10">Acerca de Praxis Magick</Link>
+              <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="block py-4 text-gray-300 border-b border-white/10">Preguntas Frecuentes</Link>
+              
               {isUserLoggedIn && (
-                 <button className="block w-full text-left py-4 text-red-400 border-t border-white/10 mt-4">Cerrar Sesión</button>
+                 <button className="block w-full text-left py-4 text-red-400 border-t border-white/10 mt-4 cursor-pointer">Cerrar Sesión</button>
               )}
             </div>
           </div>
