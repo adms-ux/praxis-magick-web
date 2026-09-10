@@ -3,17 +3,21 @@ import Link from "next/link";
 
 export default function CatalogoCompleto() {
   const productos = [
-    { id: "e1", name: "Demonios del Verum", desc: "Método operativo completo para trabajar con los 18 espíritus.", tag: "Disponible", route: "/ebooks" },
-    { id: "g1", name: "Grimorios Digitales", desc: "Instrucciones de uso, métodos de consagración y ritualística.", tag: "Disponible", route: "/grimorios" },
-    { id: "e2", name: "Magia Olímpica", desc: "Guía para trabajar con las siete inteligencias planetarias.", tag: "23 Octubre", route: "/ebooks" },
-    { id: "o1", name: "Jester's Road (Oleum)", desc: "Abre Caminos. Surgat abre las puertas a lugares inalcanzables.", tag: "Próximamente", route: "/oleums" },
-    { id: "o2", name: "Leprechaun's Hoard (Oleum)", desc: "Abundancia. Atrae abundancia económica a tu vida.", tag: "Próximamente", route: "/oleums" },
-    { id: "o3", name: "Pope's Decree (Oleum)", desc: "Dominación. Influye en pensamientos y emociones ajenas.", tag: "Próximamente", route: "/oleums" },
-    { id: "o4", name: "Witch's Glamour (Oleum)", desc: "Lujuria. Despierta una atracción magnética seductora.", tag: "Próximamente", route: "/oleums" },
-    { id: "v1", name: "Velón de Poder", desc: "El Heraldo. Proclamación oficial que autoriza el ritual.", tag: "Próximamente", route: "/velas" },
-    { id: "i1", name: "Ídolos de Madera", desc: "Cuerpos físicos tallados para albergar a las entidades.", tag: "Próximamente", route: "/idolos" },
-    { id: "s1", name: "Consultas Personales", desc: "Trabajos a la medida ejecutados por nuestros practicantes.", tag: "Servicio", route: "/consultas" },
-    { id: "s2", name: "Sesiones de Ouija", desc: "Consulta directa a fuerzas reales mediante el tablero.", tag: "Servicio", route: "/ouija" }
+    { id: "e1", name: "Demonios del Verum", desc: "Método operativo completo para trabajar con los 18 espíritus.", tag: "Disponible", link: "/ebooks" },
+    { id: "g1", name: "Grimorios Digitales", desc: "Instrucciones precisas y rituales extraídos de nuestra biblioteca.", tag: "Próximamente", link: "/grimorios" },
+    { id: "c1", name: "Magia Olímpica", desc: "Guía para trabajar con las siete inteligencias planetarias clásicas.", tag: "23 Octubre", link: "/cursos" },
+    { id: "o1", name: "Jester's Road (Oleum)", desc: "Abre Caminos. Surgat abre las puertas.", tag: "Próximamente", link: "/oleums" },
+    { id: "o2", name: "Leprechaun's Hoard (Oleum)", desc: "Abundancia. Atrae abundancia a tu vida.", tag: "Próximamente", link: "/oleums" },
+    { id: "o3", name: "Pope's Decree (Oleum)", desc: "Dominación. Influye en pensamientos ajenos.", tag: "Próximamente", link: "/oleums" },
+    { id: "o4", name: "Witch's Glamour (Oleum)", desc: "Lujuria. Atracción magnética seductora.", tag: "Próximamente", link: "/oleums" },
+    { id: "o5", name: "King's Vault (Oleum)", desc: "Prosperidad. Visión para consolidar imperio.", tag: "Próximamente", link: "/oleums" },
+    { id: "o6", name: "Danse Macabre (Oleum)", desc: "Funesto. Hará que tu víctima baile la danza.", tag: "Próximamente", link: "/oleums" },
+    { id: "v1", name: "Velón de Poder", desc: "El Heraldo. Proclamación que autoriza el ritual.", tag: "Próximamente", link: "/velas" },
+    { id: "p1", name: "Polvo Mágico Universal", desc: "El Alquimista. Transforma objetos en consagrados.", tag: "Próximamente", link: "/polvos" },
+    { id: "po1", name: "Poppet", desc: "Hamelin's Children. Dirige energía a terceros.", tag: "Próximamente", link: "/poppets" },
+    { id: "i1", name: "Ídolos de Madera", desc: "Cuerpos tallados para entidades (Claunech, Frimost...).", tag: "Próximamente", link: "/idolos" },
+    { id: "s1", name: "Consultas Personales", desc: "Trabajos a la medida (Amor, Prosperidad, Funesta).", tag: "Servicio", link: "/consultas" },
+    { id: "s2", name: "Sesiones de Ouija", desc: "Consulta a fuerzas reales mediante el tablero.", tag: "Servicio", link: "/ouija" }
   ];
 
   return (
@@ -27,24 +31,23 @@ export default function CatalogoCompleto() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {productos.map((producto) => (
-          <div key={producto.id} className="bg-black/50 border border-green-500/20 rounded-xl overflow-hidden hover:border-green-500/60 transition-all duration-300 flex flex-col">
-            <div className="relative w-full aspect-square bg-white/5 flex items-center justify-center border-b border-green-500/20 p-2 text-center">
-              <span className="text-gray-600 font-sans text-[10px] md:text-xs uppercase tracking-widest">
-                Próximamente
+          <div key={producto.id} className="bg-black/50 border border-green-500/20 rounded-xl overflow-hidden hover:border-green-500/60 transition-all duration-300 flex flex-col shadow-lg">
+            <div className="relative w-full aspect-square bg-black/80 flex items-center justify-center border-b border-green-500/20 p-2 text-center">
+              <span className="text-gray-700 font-sans text-[10px] md:text-xs uppercase tracking-widest">
+                Imagen
               </span>
-              <div className="absolute top-2 right-2 bg-black/80 border border-green-500/50 text-green-300 text-[8px] md:text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded backdrop-blur-md">
+              <div className="absolute top-2 right-2 bg-black/90 border border-green-500/50 text-green-300 text-[8px] md:text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded backdrop-blur-md">
                 {producto.tag}
               </div>
             </div>
             <div className="p-3 md:p-5 flex flex-col flex-grow text-center md:text-left">
-              <h4 className="text-sm md:text-base font-cinzel text-gray-200 mb-2 leading-snug">
+              <h4 className="text-sm md:text-base font-cinzel text-gray-100 mb-2 leading-snug">
                 {producto.name}
               </h4>
               <p className="text-[10px] md:text-xs text-gray-400 font-sans leading-relaxed mb-4 flex-grow">
                 {producto.desc}
               </p>
-              {/* ESTO YA LOS DIRIGE A SU SECCIÓN RESPECTIVA */}
-              <Link href={producto.route} className="w-full py-2 bg-transparent border border-gray-600 text-gray-300 hover:border-green-400 hover:text-green-300 rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer text-center block">
+              <Link href={producto.link} className="block w-full py-2 bg-transparent border border-gray-600 text-gray-300 hover:border-green-400 hover:text-green-300 rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors text-center">
                 Ver Detalles
               </Link>
             </div>
