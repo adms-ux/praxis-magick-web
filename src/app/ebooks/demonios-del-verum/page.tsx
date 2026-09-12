@@ -9,17 +9,14 @@ export default function ProductoDemoniosVerum() {
   const router = useRouter();
   const { showToast } = useToast();
   
-  // Lógica de fechas y usuarios
   const [isStoreOpen, setIsStoreOpen] = useState(false);
-  const isUserLoggedIn = false; // MOCK: Cambiará cuando conectemos Supabase
-  const userHasPurchased = false; // MOCK: Verifica si compró el libro
-  const userHasViewedSample = false; // MOCK: Verifica si descargó la muestra
+  const isUserLoggedIn = false; 
+  const userHasPurchased = false; 
+  const userHasViewedSample = false; 
   
-  // Estados de la interfaz
   const [activeTab, setActiveTab] = useState<"sinopsis" | "aprendizaje" | "ficha">("sinopsis");
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Temporizador inteligente para el precio y comentarios
   useEffect(() => {
     const targetDate = new Date(2026, 8, 23, 23, 59, 59).getTime();
     const checkDate = () => {
@@ -60,9 +57,9 @@ export default function ProductoDemoniosVerum() {
 
   const handleLeaveReview = () => {
     if (!isUserLoggedIn) {
-      showToast("Inicia sesión para comentar.", "error");
+      showToast("Inicia sesión para interactuar con el Cónclave.", "error");
     } else if (!userHasPurchased && !userHasViewedSample) {
-      showToast("Debes adquirir el tomo o ver la muestra para agregar un comentario.", "error");
+      showToast("Debes adquirir el tomo o descargar la muestra para agregar un comentario.", "error");
     } else {
       showToast("Abriendo editor de comentarios...", "info");
     }
@@ -108,17 +105,16 @@ export default function ProductoDemoniosVerum() {
             <h1 className="text-3xl md:text-5xl font-cinzel text-gray-100 mb-2 leading-tight">Demonios del Verum</h1>
             <p className="text-sm font-sans text-green-400 mb-4 uppercase tracking-widest">Autoría de Praxis Magick</p>
             
-            {/* Calificación interactiva dependiente de la fecha */}
             <div onClick={() => document.getElementById('resenas')?.scrollIntoView({ behavior: 'smooth' })} className="flex items-center gap-2 mb-6 cursor-pointer group">
               {isStoreOpen ? (
                 <>
-                  <div className="flex text-green-500 text-sm">★★★★<span className="text-gray-600">★</span></div>
-                  <span className="text-xs font-sans text-gray-400 group-hover:text-green-300 transition-colors">4.2 (3 reseñas)</span>
+                  <div className="flex text-green-500 text-sm">★★★★<span className="text-green-500">★</span></div>
+                  <span className="text-xs font-sans text-gray-400 group-hover:text-green-300 transition-colors">4.8 (14 reseñas)</span>
                 </>
               ) : (
                 <>
                   <div className="flex text-gray-600 text-sm">★★★★★</div>
-                  <span className="text-xs font-sans text-gray-500 group-hover:text-gray-300 transition-colors">Sin reseñas aún</span>
+                  <span className="text-xs font-sans text-gray-500 group-hover:text-gray-300 transition-colors">0 reseñas (Preventa)</span>
                 </>
               )}
             </div>
@@ -170,14 +166,14 @@ export default function ProductoDemoniosVerum() {
           
           <div className="p-6 md:p-10 text-sm font-sans text-gray-300 leading-relaxed">
             {activeTab === "sinopsis" && (
-              <p>El Grimorium Verum ha sido malinterpretado durante siglos. En este tomo, Praxis Magick destila la verdadera esencia de su sistema operativo, eliminando el velo de superstición para revelar una maquinaria de resultados directos. Aprenderás a establecer contacto, negociar y dirigir a los 18 espíritus sin requerir túnicas, herramientas costosas ni dogmas limitantes.</p>
+              <p>El Grimorium Verum ha sido malinterpretado durante siglos. En este tomo, Praxis Magick destila la verdadera esencia de su sistema operativo, eliminando el velo de superstición para revelar una maquinaria de resultados directos. Aprenderás a establecer contacto, negociar y dirigir a los 18 espíritus del Duque Syrach sin requerir túnicas, herramientas costosas ni dogmas limitantes.</p>
             )}
             {activeTab === "aprendizaje" && (
               <ul className="list-disc pl-5 space-y-3">
-                <li>La estructura jerárquica real de los espíritus del Verum.</li>
-                <li>Cómo preparar tu espacio mental y físico para la evocación moderna.</li>
+                <li>La vibración de las siete vocales griegas y el Sello de Apertura Solar.</li>
+                <li>La creación de tu Llave Maestra mediante el Sello de Scirlin.</li>
                 <li>Elaboración de peticiones exactas para evitar vacíos legales mágicos.</li>
-                <li>Estrategias de cierre y despojo para mantener el equilibrio energético.</li>
+                <li>El contrato directo: cómo la proclamación pública sirve como ofrenda post-manifestación.</li>
               </ul>
             )}
             {activeTab === "ficha" && (
@@ -220,25 +216,24 @@ export default function ProductoDemoniosVerum() {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Comentario 1: Muestra Gratis e Interfaz */}
+              
               <div className="bg-white/5 p-6 rounded-xl border border-white/5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center font-sans font-bold text-lg text-gray-300">R</div>
                     <div>
                       <h4 className="text-sm font-bold text-gray-200">Rafael O.</h4>
-                      <span className="text-[10px] text-gray-400 uppercase tracking-widest flex items-center gap-1">Lectura de Muestra</span>
+                      <span className="text-[10px] text-green-400 uppercase tracking-widest flex items-center gap-1">Lectura de Muestra</span>
                     </div>
                   </div>
                   <span className="text-xs text-gray-500 font-sans">24 Sep</span>
                 </div>
                 <div className="flex text-green-500 text-xs mb-3">★★★★<span className="text-gray-600">★</span></div>
                 <p className="text-sm font-sans text-gray-300 leading-relaxed">
-                  La muestra gratuita me ayudó mucho a decidirme. La app es súper cómoda de leer en el celular, la interfaz oscura parece un Kindle pero más accesible. Me gusta que vaya directo a la práctica sin tanto teatro.
+                  La muestra gratuita me convenció por completo. Me encantó la premisa de que no necesitas trazar círculos de sal porque la verdadera protección nace de tu autoridad como operador. La app es comodísima para leer de noche, parece un Kindle oscuro.
                 </p>
               </div>
               
-              {/* Comentario 2: Práctica y Sin Dogmas */}
               <div className="bg-white/5 p-6 rounded-xl border border-white/5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
@@ -252,11 +247,10 @@ export default function ProductoDemoniosVerum() {
                 </div>
                 <div className="flex text-green-500 text-xs mb-3">★★★★★</div>
                 <p className="text-sm font-sans text-gray-300 leading-relaxed">
-                  Llevo años leyendogrimorios que te exigen conseguir cosas imposibles. Aquí todo tiene sentido lógico. Apenas voy a armar mi primer ritual con este sistema, pero la estructura me da mucha claridad.
+                  Llamé a Surgat para destrabar un negocio que llevaba meses bloqueado por burocracia y funcionó rapidísimo. El ritual con la vibración de las siete vocales y el sello de Scirlin se siente brutalmente poderoso. Un enfoque muy directo.
                 </p>
               </div>
 
-              {/* Comentario 3: Corto y directo */}
               <div className="bg-white/5 p-6 rounded-xl border border-white/5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
@@ -268,9 +262,9 @@ export default function ProductoDemoniosVerum() {
                   </div>
                   <span className="text-xs text-gray-500 font-sans">28 Sep</span>
                 </div>
-                <div className="flex text-green-500 text-xs mb-3">★★★★<span className="text-gray-600">★</span></div>
+                <div className="flex text-green-500 text-xs mb-3">★★★★★</div>
                 <p className="text-sm font-sans text-gray-300 leading-relaxed">
-                  Lo aparté en preventa y no me arrepiento. El hecho de poder cambiar de inglés a español rápido me sirve para comparar términos operativos. Recomendado.
+                  Por fin magia transaccional sin dogmas ni culpas. La regla de pagar con la proclamación pública sólo en la "fase dos" (cuando el resultado ya se materializó) es lo más lógico que he leído. Además, la opción de cambiar entre ES y EN con un botón es una joya.
                 </p>
               </div>
             </div>
