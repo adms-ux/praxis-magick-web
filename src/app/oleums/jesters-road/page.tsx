@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useToast } from "../../../Context/ToastContext";
+import { useToast } from "../../Context/ToastContext";
 
 export default function OleumJestersRoad() {
   const router = useRouter();
